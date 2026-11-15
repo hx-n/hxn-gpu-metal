@@ -10,7 +10,7 @@ Metal's own conventions: a device makes buffers, textures, libraries and pipelin
 and a command queue's command buffers record compute and render passes.
 
 Shaders come from [hxnsl](https://github.com/hx-n/hxnsl), which compiles HXSL
-to MSL during the Haxe build and reports, in `MSL_SLOTS`, the argument index
+to MSL at compile time and reports, in `MSL_SLOTS`, the argument index
 each resource takes. The driver binds by those indices.
 
 ```haxe
@@ -87,8 +87,8 @@ sets `hxn.Loop.manual` and calls `hxn.Loop.sync()` once a frame.
 
 A shader for this driver implements `gpu.metal.Shader`, which extends
 `hxnsl.Shader`. Besides hxnsl's `MSL` and `MSL_SLOTS`, it gets `metallib()`:
-the shader compiled to a Metal library during the Haxe build, by
-`xcrun metal` and `metallib`, for the SDK the build targets (macOS, or iOS
+the shader compiled to a Metal library at compile time, by
+`xcrun metal` and `metallib`, for the SDK the program targets (macOS, or iOS
 and the iOS simulator with hxcpp's `-D iphoneos` or `-D iphonesim`).
 `Shaders.library` loads it, so the program compiles no shader:
 
@@ -98,7 +98,7 @@ class Tinted implements gpu.metal.Shader { static var SRC = { ... }; }
 var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
 ```
 
-Where the build machine has no Metal compiler, the build warns once,
+Where the compiling machine has no Metal compiler, compilation warns once,
 `metallib()` is null, and `Shaders.library` compiles the MSL instead. Xcode
 installs the compiler, or `xcodebuild -downloadComponent MetalToolchain`.
 

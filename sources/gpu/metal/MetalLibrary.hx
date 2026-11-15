@@ -7,10 +7,10 @@ import haxe.macro.Expr;
 import sys.io.Process;
 
 /**
-	An hxnsl target that compiles a shader's MSL to a Metal library during
-	the build, with `xcrun metal` and `metallib`, for the SDK the compile
+	An hxnsl target that compiles a shader's MSL to a Metal library at
+	compile time, with `xcrun metal` and `metallib`, for the SDK the program
 	targets: iOS (`-D iphoneos`), the iOS simulator (`-D iphonesim`) or
-	macOS. Without a Metal compiler on the build machine the shader's
+	macOS. Without a Metal compiler on the compiling machine the shader's
 	`metallib()` is null, and the program compiles its MSL when it loads it.
 **/
 class MetalLibrary extends hxnsl.Target {
@@ -71,7 +71,7 @@ class MetalLibrary extends hxnsl.Target {
 		}
 		return [{
 			name: "metallib",
-			doc: "The shader as a Metal library built for this compile's SDK, or null where the build had no Metal compiler.",
+			doc: "The shader as a Metal library built for this compile's SDK, or null where no Metal compiler was found at compile time.",
 			access: [APublic, AStatic],
 			kind: FFun({args: [], ret: macro :Null<haxe.io.Bytes>, expr: macro return $value}),
 			pos: s.pos
