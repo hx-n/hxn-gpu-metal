@@ -44,7 +44,7 @@ class Main {
 	static function compute(device:Device, queue:CommandQueue, next:() -> Void) {
 		// Compiled on Metal's threads; await() takes each result when it is ready.
 		var library = device.newLibraryFromSourceAsync(Tripled.MSL).await();
-		var kernel = library.functionNamed("main_");
+		var kernel = library.functionNamed("compute_main");
 		var pipeline = device.newComputePipelineAsync(kernel).await();
 		var count = 64;
 		var input = Bytes.alloc(count * 4);
@@ -55,9 +55,9 @@ class Main {
 		var commands = queue.commandBuffer();
 		var encoder = commands.computeEncoder();
 		encoder.setPipeline(pipeline);
-		encoder.setBuffer(data, 0, slot(Tripled.MSL_SLOTS, "main", Tripled.BUFFER_data_GROUP, Tripled.BUFFER_data));
+		encoder.setBuffer(data, 0, slot(Tripled.MSL_SLOTS, "compute_main", Tripled.BUFFER_data_GROUP, Tripled.BUFFER_data));
 		// The lengths of runtime-sized arrays, which the kernel reads for bounds.
-		var entry = Lambda.find(Tripled.MSL_SLOTS, e -> e.entryPoint == "main");
+		var entry = Lambda.find(Tripled.MSL_SLOTS, e -> e.entryPoint == "compute_main");
 		if (entry.sizesBuffer != null) {
 			var sizes = Bytes.alloc(4);
 			sizes.setInt32(0, count * 4);
@@ -91,8 +91,8 @@ class Main {
 	static function render(device:Device, queue:CommandQueue) {
 		// The metallib the build made, or the MSL compiled now where it had no Metal compiler.
 		var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
-		var vertex = library.functionNamed("vertex_");
-		var fragment = library.functionNamed("fragment_");
+		var vertex = library.functionNamed("vertex_main");
+		var fragment = library.functionNamed("fragment_main");
 		// The quad's positions sit in a vertex buffer at an index no shader resource uses.
 		var vertices = 30;
 		var pipeline = device.newRenderPipelineAsync(vertex, fragment, PixelFormat.Rgba8Unorm,
@@ -121,7 +121,7 @@ class Main {
 		var encoder = commands.renderEncoder(target, LoadAction.Clear, 0, 0, 0, 0);
 		encoder.setPipeline(pipeline);
 		encoder.setVertexBuffer(positions, 0, vertices);
-		encoder.setFragmentBytes(params, slot(Tinted.MSL_SLOTS, "fragment", Tinted.PARAMS_GROUP, Tinted.PARAMS_BINDING));
+		encoder.setFragmentBytes(params, slot(Tinted.MSL_SLOTS, "fragment_main", Tinted.PARAMS_GROUP, Tinted.PARAMS_BINDING));
 		encoder.draw(Primitive.TriangleStrip, 0, 4, 1);
 		encoder.end();
 		commands.commit();

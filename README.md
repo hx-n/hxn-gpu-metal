@@ -19,7 +19,7 @@ import gpu.metal.*;
 var device = Device.systemDefault();
 var queue = device.newCommandQueue();
 var library = device.newLibraryFromSource(Tripled.MSL);    // an hxnsl shader
-var pipeline = device.newComputePipeline(library.functionNamed("main_"));
+var pipeline = device.newComputePipeline(library.functionNamed("compute_main"));
 var data = device.newBufferWith(input);
 
 var commands = queue.commandBuffer();
@@ -102,9 +102,8 @@ Where the build machine has no Metal compiler, the build warns once,
 `metallib()` is null, and `Shaders.library` compiles the MSL instead. Xcode
 installs the compiler, or `xcodebuild -downloadComponent MetalToolchain`.
 
-- Naga, which writes the MSL, appends `_` to the entry points MSL reserves:
-  hxnsl's `vertex`, `fragment` and `main` are the functions `vertex_`,
-  `fragment_` and `main_`.
+- The MSL functions keep hxnsl's entry point names: `vertex_main`,
+  `fragment_main` and `compute_main`, the names `MSL_SLOTS` lists them by.
 - `MSL_SLOTS` lists, for each entry point, each resource's `kind` (buffer,
   texture or sampler) and `index`. A stage with a storage buffer also has a
   `sizesBuffer`: bind the byte length of each runtime-sized array there, as
