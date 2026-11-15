@@ -89,7 +89,8 @@ class Main {
 	}
 
 	static function render(device:Device, queue:CommandQueue) {
-		var library = device.newLibraryFromSource(Tinted.MSL);
+		// The metallib the build made, or the MSL compiled now where it had no Metal compiler.
+		var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
 		var vertex = library.functionNamed("vertex_");
 		var fragment = library.functionNamed("fragment_");
 		// The quad's positions sit in a vertex buffer at an index no shader resource uses.

@@ -84,6 +84,10 @@ runs:
         test -n "$tag"
         cargo install --git https://github.com/hx-n/hxn.git --tag "$tag" --locked hxn-cli
         hxn version
+    # The Metal compiler, which builds each shader's metallib during the Haxe build.
+    - if: runner.os == 'macOS'
+      shell: bash
+      run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
     # hxnsl, which writes the check's shaders. It has no release yet, so its
     # tool is built from source.
     - shell: bash

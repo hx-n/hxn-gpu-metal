@@ -85,6 +85,23 @@ sets `hxn.Loop.manual` and calls `hxn.Loop.sync()` once a frame.
 
 ## Shaders from hxnsl
 
+A shader for this driver implements `gpu.metal.Shader`, which extends
+`hxnsl.Shader`. Besides hxnsl's `MSL` and `MSL_SLOTS`, it gets `metallib()`:
+the shader compiled to a Metal library during the Haxe build, by
+`xcrun metal` and `metallib`, for the SDK the build targets (macOS, or iOS
+and the iOS simulator with hxcpp's `-D iphoneos` or `-D iphonesim`).
+`Shaders.library` loads it, so the program compiles no shader:
+
+```haxe
+class Tinted implements gpu.metal.Shader { static var SRC = { ... }; }
+
+var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
+```
+
+Where the build machine has no Metal compiler, the build warns once,
+`metallib()` is null, and `Shaders.library` compiles the MSL instead. Xcode
+installs the compiler, or `xcodebuild -downloadComponent MetalToolchain`.
+
 - Naga, which writes the MSL, appends `_` to the entry points MSL reserves:
   hxnsl's `vertex`, `fragment` and `main` are the functions `vertex_`,
   `fragment_` and `main_`.

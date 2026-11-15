@@ -1,5 +1,5 @@
 /** Each value becomes three times itself plus one. **/
-class Tripled implements hxnsl.Shader {
+class Tripled implements gpu.metal.Shader {
 	static var SRC = {
 		@param var data : RWBuffer<Int>;
 
@@ -12,7 +12,7 @@ class Tripled implements hxnsl.Shader {
 }
 
 /** Fills what it covers with `tint`. **/
-class Tinted implements hxnsl.Shader {
+class Tinted implements gpu.metal.Shader {
 	static var SRC = {
 		@input var input : { position : Vec2 };
 		var output : { position : Vec4, color : Vec4 };

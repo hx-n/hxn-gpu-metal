@@ -105,6 +105,7 @@ jobs:
           mkdir -p "$HOME/haxelib" && haxelib setup "$HOME/haxelib"
       # The hxn haxelib the package depends on comes from haxelib with it.
       - uses: dtolnay/rust-toolchain@stable
+      - run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
       - name: Install the haxelib, hxnsl and hxcpp
         run: |
           haxelib install hxn-gpu-metal-*.zip --always

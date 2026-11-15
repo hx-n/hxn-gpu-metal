@@ -19,6 +19,8 @@ releasenote = "First release: devices, buffers, textures, samplers, libraries fr
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]
+# Registers the Metal targets for gpu.metal.Shader, from sources/.
+init = ["gpu.metal.Shaders.register()"]
 
 [dependencies]
 hxn = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.1" }

@@ -24,7 +24,9 @@ jobs:
         with:
           runtime: cpp
       # Fails if the runner has no Metal device, rather than passing on the
-      # line the check prints without one.
+      # line the check prints without one, or if the shaders fell back to MSL
+      # because the build had no Metal compiler.
       - run: |
-          hxn check cpp | tee check.txt
+          hxn check cpp 2>&1 | tee check.txt
           grep -q '^compute: 64 values' check.txt
+          ! grep -q 'no Metal compiler' check.txt

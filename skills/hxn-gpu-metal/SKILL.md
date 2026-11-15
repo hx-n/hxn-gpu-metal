@@ -19,7 +19,11 @@ only), iOS and the iOS simulator. A program needs no Rust.
 
 ## Use
 
-Write the shader as an hxnsl class; it gets `MSL` and `MSL_SLOTS`.
+Write the shader as an hxnsl class implementing `gpu.metal.Shader`; it gets
+`MSL`, `MSL_SLOTS`, and `metallib()`, the shader compiled to a Metal library
+during the build (null where the build machine has no Metal compiler). Load
+it with `gpu.metal.Shaders.library(device, Shader.metallib(), Shader.MSL)`,
+which compiles the MSL only when there is no metallib.
 
 ```haxe
 import gpu.metal.*;
