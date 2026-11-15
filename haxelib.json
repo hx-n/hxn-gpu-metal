@@ -4,7 +4,7 @@
   "description": "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework",
   "url": "https://github.com/hx-n/hxn-gpu-metal",
   "license": "Apache",
-  "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp"],
+  "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native"],
   "contributors": ["darmie", "rayzor"],
   "releasenote": "First release: devices, buffers, textures, samplers, libraries from MSL or metallib, compute and render pipelines, and a CAMetalLayer for a window.",
   "dependencies": { "hxn": "0.3.1" }
