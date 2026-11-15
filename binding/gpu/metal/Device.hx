@@ -32,6 +32,10 @@ class Device {
 	public function newLibraryFromSource(msl:String):Library
 		return Library.hxnAdopt(HxnGpuMetalNative.device_new_library_from_source(hxnRaw, msl));
 
+	/** A library from MSL source, compiled on Metal's threads; the future settles when it is. **/
+	public function newLibraryFromSourceAsync(msl:String):hxn.Future<Library>
+		return HxnGpuMetalFuture.ofLibrary(HxnGpuMetalNative.device_new_library_from_source_async(hxnRaw, msl));
+
 	/** A library from a compiled `.metallib`. **/
 	public function newLibrary(metallib:haxe.io.Bytes):Library
 		return Library.hxnAdopt(HxnGpuMetalNative.device_new_library(hxnRaw, metallib));
@@ -41,6 +45,10 @@ class Device {
 
 	public function newComputePipeline(function_:Function):ComputePipeline
 		return ComputePipeline.hxnAdopt(HxnGpuMetalNative.device_new_compute_pipeline(hxnRaw, function_ == null ? null : function_.hxnRaw));
+
+	/** A compute pipeline, compiled on Metal's threads; the future settles when it is. **/
+	public function newComputePipelineAsync(function_:Function):hxn.Future<ComputePipeline>
+		return HxnGpuMetalFuture.ofComputePipeline(HxnGpuMetalNative.device_new_compute_pipeline_async(hxnRaw, function_ == null ? null : function_.hxnRaw));
 
 	/**
 		A render pipeline drawing to one color target of `format`, with vertex buffers laid out
@@ -68,6 +76,34 @@ class Device {
 		}
 		var layoutsBytes = layoutsOut.getBytes();
 		return RenderPipeline.hxnAdopt(HxnGpuMetalNative.device_new_render_pipeline(hxnRaw, vertex == null ? null : vertex.hxnRaw, fragment == null ? null : fragment.hxnRaw, format, attributesBytes, layoutsBytes));
+	}
+
+	/**
+		`new_render_pipeline`, compiled on Metal's threads; the future settles when it is. Fails
+		at once for a vertex layout Metal cannot take.
+	**/
+	public function newRenderPipelineAsync(vertex:Function, fragment:Function, format:PixelFormat, attributes:Array<VertexAttribute>, layouts:Array<VertexLayout>):hxn.Future<RenderPipeline> {
+		var attributesOut = new haxe.io.BytesBuffer();
+		if (attributes == null)
+			throw new haxe.Exception("null where a list is needed");
+		attributesOut.addInt32(attributes.length);
+		for (item0 in attributes) {
+			if (item0 == null)
+				throw new haxe.Exception("null where a VertexAttribute is needed");
+			item0.hxnWrite(attributesOut);
+		}
+		var attributesBytes = attributesOut.getBytes();
+		var layoutsOut = new haxe.io.BytesBuffer();
+		if (layouts == null)
+			throw new haxe.Exception("null where a list is needed");
+		layoutsOut.addInt32(layouts.length);
+		for (item0 in layouts) {
+			if (item0 == null)
+				throw new haxe.Exception("null where a VertexLayout is needed");
+			item0.hxnWrite(layoutsOut);
+		}
+		var layoutsBytes = layoutsOut.getBytes();
+		return HxnGpuMetalFuture.ofRenderPipeline(HxnGpuMetalNative.device_new_render_pipeline_async(hxnRaw, vertex == null ? null : vertex.hxnRaw, fragment == null ? null : fragment.hxnRaw, format, attributesBytes, layoutsBytes));
 	}
 
 	public function newTexture(descriptor:TextureDescriptor):Texture {

@@ -1,11 +1,16 @@
 //! Metal for Haxe: a thin layer over Apple's Metal framework, shaped like Metal itself. Shaders
 //! come from hxnsl as MSL, or as a metallib built from it, and are bound by the argument
 //! indices hxnsl reports in `MSL_SLOTS`.
+//!
+//! The `_async` constructors and `CommandBuffer.completed` settle a future from the completion
+//! handler Metal calls on its own thread; Haxe receives it through `hxn.Loop`.
 
 use std::ffi::c_void;
 use std::ptr::NonNull;
 
+use block2::RcBlock;
 use dispatch2::DispatchData;
+use hxn_future::Future;
 use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
 use objc2_foundation::{NSError, NSString};
@@ -36,6 +41,19 @@ unsafe impl<T: ?Sized> Send for Owned<T> {}
 
 fn message(error: Retained<NSError>) -> String {
     error.localizedDescription().to_string()
+}
+
+/// The completion handler of an `_async` constructor: what Metal made, or its error.
+type Made<P> = RcBlock<dyn Fn(*mut ProtocolObject<P>, *mut NSError)>;
+
+/// A command buffer's completed handler.
+type Completed = RcBlock<dyn Fn(NonNull<ProtocolObject<dyn MTLCommandBuffer>>)>;
+
+/// Metal's error from a completion handler, which passes it unretained.
+fn handler_error(error: *mut NSError, otherwise: &str) -> String {
+    unsafe { Retained::retain(error) }
+        .map(message)
+        .unwrap_or_else(|| otherwise.to_string())
 }
 
 fn usize_of(value: i64, what: &str) -> Result<usize, String> {
@@ -230,6 +248,34 @@ impl Device {
         })
     }
 
+    /// A library from MSL source, compiled on Metal's threads; the future settles when it is.
+    pub fn new_library_from_source_async(&self, msl: &str) -> Future<Library> {
+        let (completer, future) = hxn_future::pending::<Library>();
+        let handler: Made<dyn MTLLibrary> =
+            RcBlock::new(
+                move |library, error| match unsafe { Retained::retain(library) } {
+                    Some(library) => {
+                        completer.resolve(Library {
+                            library: Shared(library),
+                        });
+                    }
+                    None => {
+                        completer.reject(handler_error(error, "Metal compiled no library"));
+                    }
+                },
+            );
+        unsafe {
+            self.device
+                .0
+                .newLibraryWithSource_options_completionHandler(
+                    &NSString::from_str(msl),
+                    None,
+                    RcBlock::as_ptr(&handler),
+                )
+        };
+        future
+    }
+
     /// A library from a compiled `.metallib`.
     pub fn new_library(&self, metallib: &[u8]) -> Result<Library, String> {
         let data = DispatchData::from_bytes(metallib);
@@ -265,6 +311,32 @@ impl Device {
         })
     }
 
+    /// A compute pipeline, compiled on Metal's threads; the future settles when it is.
+    pub fn new_compute_pipeline_async(&self, function: &Function) -> Future<ComputePipeline> {
+        let (completer, future) = hxn_future::pending::<ComputePipeline>();
+        let handler: Made<dyn MTLComputePipelineState> = RcBlock::new(
+            move |pipeline, error| match unsafe { Retained::retain(pipeline) } {
+                Some(pipeline) => {
+                    completer.resolve(ComputePipeline {
+                        pipeline: Shared(pipeline),
+                    });
+                }
+                None => {
+                    completer.reject(handler_error(error, "Metal made no compute pipeline"));
+                }
+            },
+        );
+        unsafe {
+            self.device
+                .0
+                .newComputePipelineStateWithFunction_completionHandler(
+                    &function.function.0,
+                    RcBlock::as_ptr(&handler),
+                )
+        };
+        future
+    }
+
     /// A render pipeline drawing to one color target of `format`, with vertex buffers laid out
     /// as `attributes` and `layouts` describe (both empty when the vertex stage reads none).
     pub fn new_render_pipeline(
@@ -275,38 +347,7 @@ impl Device {
         attributes: Vec<VertexAttribute>,
         layouts: Vec<VertexLayout>,
     ) -> Result<RenderPipeline, String> {
-        let descriptor = MTLRenderPipelineDescriptor::new();
-        descriptor.setVertexFunction(Some(&vertex.function.0));
-        descriptor.setFragmentFunction(Some(&fragment.function.0));
-        unsafe { descriptor.colorAttachments().objectAtIndexedSubscript(0) }
-            .setPixelFormat(format.raw());
-        if !attributes.is_empty() {
-            let vertices = MTLVertexDescriptor::new();
-            for a in &attributes {
-                let attribute = unsafe {
-                    vertices
-                        .attributes()
-                        .objectAtIndexedSubscript(usize_of(a.location as i64, "a location")?)
-                };
-                attribute.setFormat(MTLVertexFormat(a.format as isize as usize));
-                unsafe { attribute.setOffset(usize_of(a.offset as i64, "an offset")?) };
-                unsafe { attribute.setBufferIndex(usize_of(a.buffer as i64, "a buffer index")?) };
-            }
-            for l in &layouts {
-                let layout = unsafe {
-                    vertices
-                        .layouts()
-                        .objectAtIndexedSubscript(usize_of(l.buffer as i64, "a buffer index")?)
-                };
-                unsafe { layout.setStride(usize_of(l.stride as i64, "a stride")?) };
-                layout.setStepFunction(if l.per_instance {
-                    MTLVertexStepFunction::PerInstance
-                } else {
-                    MTLVertexStepFunction::PerVertex
-                });
-            }
-            descriptor.setVertexDescriptor(Some(&vertices));
-        }
+        let descriptor = render_descriptor(vertex, fragment, format, &attributes, &layouts)?;
         let pipeline = self
             .device
             .0
@@ -315,6 +356,41 @@ impl Device {
         Ok(RenderPipeline {
             pipeline: Shared(pipeline),
         })
+    }
+
+    /// `new_render_pipeline`, compiled on Metal's threads; the future settles when it is. Fails
+    /// at once for a vertex layout Metal cannot take.
+    pub fn new_render_pipeline_async(
+        &self,
+        vertex: &Function,
+        fragment: &Function,
+        format: PixelFormat,
+        attributes: Vec<VertexAttribute>,
+        layouts: Vec<VertexLayout>,
+    ) -> Result<Future<RenderPipeline>, String> {
+        let descriptor = render_descriptor(vertex, fragment, format, &attributes, &layouts)?;
+        let (completer, future) = hxn_future::pending::<RenderPipeline>();
+        let handler: Made<dyn MTLRenderPipelineState> = RcBlock::new(
+            move |pipeline, error| match unsafe { Retained::retain(pipeline) } {
+                Some(pipeline) => {
+                    completer.resolve(RenderPipeline {
+                        pipeline: Shared(pipeline),
+                    });
+                }
+                None => {
+                    completer.reject(handler_error(error, "Metal made no render pipeline"));
+                }
+            },
+        );
+        unsafe {
+            self.device
+                .0
+                .newRenderPipelineStateWithDescriptor_completionHandler(
+                    &descriptor,
+                    RcBlock::as_ptr(&handler),
+                )
+        };
+        Ok(future)
     }
 
     pub fn new_texture(&self, descriptor: TextureDescriptor) -> Result<Texture, String> {
@@ -361,6 +437,49 @@ impl Device {
             sampler: Shared(sampler),
         })
     }
+}
+
+/// The descriptor `new_render_pipeline` and its async form compile.
+fn render_descriptor(
+    vertex: &Function,
+    fragment: &Function,
+    format: PixelFormat,
+    attributes: &[VertexAttribute],
+    layouts: &[VertexLayout],
+) -> Result<Retained<MTLRenderPipelineDescriptor>, String> {
+    let descriptor = MTLRenderPipelineDescriptor::new();
+    descriptor.setVertexFunction(Some(&vertex.function.0));
+    descriptor.setFragmentFunction(Some(&fragment.function.0));
+    unsafe { descriptor.colorAttachments().objectAtIndexedSubscript(0) }
+        .setPixelFormat(format.raw());
+    if !attributes.is_empty() {
+        let vertices = MTLVertexDescriptor::new();
+        for a in attributes {
+            let attribute = unsafe {
+                vertices
+                    .attributes()
+                    .objectAtIndexedSubscript(usize_of(a.location as i64, "a location")?)
+            };
+            attribute.setFormat(MTLVertexFormat(a.format as isize as usize));
+            unsafe { attribute.setOffset(usize_of(a.offset as i64, "an offset")?) };
+            unsafe { attribute.setBufferIndex(usize_of(a.buffer as i64, "a buffer index")?) };
+        }
+        for l in layouts {
+            let layout = unsafe {
+                vertices
+                    .layouts()
+                    .objectAtIndexedSubscript(usize_of(l.buffer as i64, "a buffer index")?)
+            };
+            unsafe { layout.setStride(usize_of(l.stride as i64, "a stride")?) };
+            layout.setStepFunction(if l.per_instance {
+                MTLVertexStepFunction::PerInstance
+            } else {
+                MTLVertexStepFunction::PerVertex
+            });
+        }
+        descriptor.setVertexDescriptor(Some(&vertices));
+    }
+    Ok(descriptor)
 }
 
 /// GPU memory the CPU can read and write.
@@ -635,6 +754,34 @@ impl CommandBuffer {
         blit.synchronizeResource(resource);
         blit.endEncoding();
         Ok(())
+    }
+
+    /// Settles when the GPU has finished the buffer, or fails with Metal's error. Ask for it
+    /// before `commit`; Metal takes no completion handler after.
+    pub fn completed(&mut self) -> Result<Future<()>, String> {
+        if self.buffer.0.status() != MTLCommandBufferStatus::NotEnqueued
+            && self.buffer.0.status() != MTLCommandBufferStatus::Enqueued
+        {
+            return Err("ask for completed() before commit()".into());
+        }
+        let (completer, future) = hxn_future::pending::<()>();
+        let handler: Completed = RcBlock::new(
+            move |buffer: NonNull<ProtocolObject<dyn MTLCommandBuffer>>| {
+                let buffer = unsafe { buffer.as_ref() };
+                if buffer.status() == MTLCommandBufferStatus::Error {
+                    completer.reject(
+                        buffer
+                            .error()
+                            .map(message)
+                            .unwrap_or_else(|| "the command buffer failed".into()),
+                    );
+                } else {
+                    completer.resolve(());
+                }
+            },
+        );
+        unsafe { self.buffer.0.addCompletedHandler(RcBlock::as_ptr(&handler)) };
+        Ok(future)
     }
 
     /// Presents `drawable` when the buffer's commands complete.

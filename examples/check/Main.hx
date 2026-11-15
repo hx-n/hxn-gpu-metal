@@ -38,9 +38,10 @@ class Main {
 	}
 
 	static function compute(device:Device, queue:CommandQueue) {
-		var library = device.newLibraryFromSource(Tripled.MSL);
+		// Compiled on Metal's threads; await() takes each result when it is ready.
+		var library = device.newLibraryFromSourceAsync(Tripled.MSL).await();
 		var kernel = library.functionNamed("main_");
-		var pipeline = device.newComputePipeline(kernel);
+		var pipeline = device.newComputePipelineAsync(kernel).await();
 		var count = 64;
 		var input = Bytes.alloc(count * 4);
 		for (i in 0...count)
@@ -61,8 +62,9 @@ class Main {
 		var group = Tripled.ENTRY_POINTS[0].workgroup[0];
 		encoder.dispatchThreads(count, 1, 1, group, 1, 1);
 		encoder.end();
+		var done = commands.completed();
 		commands.commit();
-		commands.waitUntilCompleted();
+		done.await();
 
 		var output = data.read(0, count * 4);
 		for (i in 0...count)
@@ -77,9 +79,9 @@ class Main {
 		var fragment = library.functionNamed("fragment_");
 		// The quad's positions sit in a vertex buffer at an index no shader resource uses.
 		var vertices = 30;
-		var pipeline = device.newRenderPipeline(vertex, fragment, PixelFormat.Rgba8Unorm,
+		var pipeline = device.newRenderPipelineAsync(vertex, fragment, PixelFormat.Rgba8Unorm,
 			[{location: Tinted.INPUT_position, format: VertexFormat.Float2, offset: 0, buffer: vertices}],
-			[{buffer: vertices, stride: 8, perInstance: false}]);
+			[{buffer: vertices, stride: 8, perInstance: false}]).await();
 		var size = 4;
 		var target = device.newTexture({
 			width: size,

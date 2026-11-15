@@ -14,10 +14,13 @@ hxn_status hxn_gpu_metal_device_name(hxn_handle *self, hxn_buf *out, hxn_buf *er
 hxn_status hxn_gpu_metal_device_new_buffer(hxn_handle *self, int64_t length, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_buffer_with(hxn_handle *self, hxn_slice bytes, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_library_from_source(hxn_handle *self, hxn_slice msl, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_library_from_source_async(hxn_handle *self, hxn_slice msl, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_library(hxn_handle *self, hxn_slice metallib, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_command_queue(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_compute_pipeline(hxn_handle *self, hxn_handle *function, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_compute_pipeline_async(hxn_handle *self, hxn_handle *function, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_render_pipeline(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_render_pipeline_async(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_texture(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_sampler(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_drop(hxn_handle *self, hxn_buf *err);
@@ -64,6 +67,7 @@ hxn_status hxn_gpu_metal_command_queue_drop(hxn_handle *self, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_compute_encoder(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_render_encoder(hxn_handle *self, hxn_handle *target, int32_t load, double red, double green, double blue, double alpha, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_synchronize(hxn_handle *self, hxn_handle *texture, hxn_buf *err);
+hxn_status hxn_gpu_metal_command_buffer_completed(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_present(hxn_handle *self, hxn_handle *drawable, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_commit(hxn_handle *self, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_wait_until_completed(hxn_handle *self, hxn_buf *err);
@@ -102,6 +106,21 @@ hxn_status hxn_gpu_metal_layer_drop(hxn_handle *self, hxn_buf *err);
 /* Drawable */
 hxn_status hxn_gpu_metal_drawable_texture(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_drawable_drop(hxn_handle *self, hxn_buf *err);
+
+/* What the library has for the host. `wait` gives 1 once something is queued
+ * or 0 when the limit passes; `next` gives the id of a future, stream or
+ * signal that has something new, or -1. */
+int32_t hxn_gpu_metal_outbox_wait(int32_t milliseconds);
+int32_t hxn_gpu_metal_outbox_next(void);
+
+/* A future the library returned: a handle of its own. */
+hxn_status hxn_gpu_metal_future_state(hxn_handle *self, int32_t *out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_wait(hxn_handle *self, int32_t milliseconds, int32_t *out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_watch(hxn_handle *self, int32_t *out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_take_library(hxn_handle *self, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_take_compute_pipeline(hxn_handle *self, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_take_render_pipeline(hxn_handle *self, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_future_take_unit(hxn_handle *self, int32_t *out, hxn_buf *err);
 
 /* The bytes the library's values hold that the host's collector cannot see,
  * and whether the library asked for a collection since the last call. */

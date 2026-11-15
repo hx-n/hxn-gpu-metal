@@ -129,6 +129,15 @@
           "blocking": false
         },
         {
+          "name": "new_library_from_source_async",
+          "docs": "A library from MSL source, compiled on Metal's threads; the future settles when it is.",
+          "kind": "method",
+          "params": [{ "name": "msl", "type": "str" }],
+          "returns": "future<Library>",
+          "fallible": false,
+          "blocking": false
+        },
+        {
           "name": "new_library",
           "docs": "A library from a compiled `.metallib`.",
           "kind": "method",
@@ -154,11 +163,29 @@
           "blocking": false
         },
         {
+          "name": "new_compute_pipeline_async",
+          "docs": "A compute pipeline, compiled on Metal's threads; the future settles when it is.",
+          "kind": "method",
+          "params": [{ "name": "function", "type": "Function" }],
+          "returns": "future<ComputePipeline>",
+          "fallible": false,
+          "blocking": false
+        },
+        {
           "name": "new_render_pipeline",
           "docs": "A render pipeline drawing to one color target of `format`, with vertex buffers laid out\nas `attributes` and `layouts` describe (both empty when the vertex stage reads none).",
           "kind": "method",
           "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
           "returns": "RenderPipeline",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_render_pipeline_async",
+          "docs": "`new_render_pipeline`, compiled on Metal's threads; the future settles when it is. Fails\nat once for a vertex layout Metal cannot take.",
+          "kind": "method",
+          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
+          "returns": "future<RenderPipeline>",
           "fallible": true,
           "blocking": false
         },
@@ -368,6 +395,15 @@
           "kind": "mutating",
           "params": [{ "name": "texture", "type": "Texture" }],
           "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "completed",
+          "docs": "Settles when the GPU has finished the buffer, or fails with Metal's error. Ask for it\nbefore `commit`; Metal takes no completion handler after.",
+          "kind": "mutating",
+          "params": [],
+          "returns": "future<void>",
           "fallible": true,
           "blocking": false
         },

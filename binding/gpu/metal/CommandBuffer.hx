@@ -27,6 +27,13 @@ class CommandBuffer {
 	public function synchronize(texture:Texture):Void
 		HxnGpuMetalNative.command_buffer_synchronize(hxnRaw, texture == null ? null : texture.hxnRaw);
 
+	/**
+		Settles when the GPU has finished the buffer, or fails with Metal's error. Ask for it
+		before `commit`; Metal takes no completion handler after.
+	**/
+	public function completed():hxn.Future<hxn.Unit>
+		return HxnGpuMetalFuture.ofUnit(HxnGpuMetalNative.command_buffer_completed(hxnRaw));
+
 	/** Presents `drawable` when the buffer's commands complete. **/
 	public function present(drawable:Drawable):Void
 		HxnGpuMetalNative.command_buffer_present(hxnRaw, drawable == null ? null : drawable.hxnRaw);

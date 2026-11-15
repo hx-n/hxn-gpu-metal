@@ -55,6 +55,14 @@ inline void *device_new_library_from_source(void *self, ::String msl) {
 	return out;
 }
 
+inline void *device_new_library_from_source_async(void *self, ::String msl) {
+	hx::strbuf msl_storage;
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_device_new_library_from_source_async((hxn_handle *)self, hxn::slice(msl, msl_storage), &out, &err), err);
+	return out;
+}
+
 inline void *device_new_library(void *self, Array<unsigned char> metallib) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;
@@ -76,10 +84,24 @@ inline void *device_new_compute_pipeline(void *self, void *function) {
 	return out;
 }
 
+inline void *device_new_compute_pipeline_async(void *self, void *function) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_device_new_compute_pipeline_async((hxn_handle *)self, (hxn_handle *)function, &out, &err), err);
+	return out;
+}
+
 inline void *device_new_render_pipeline(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_device_new_render_pipeline((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), &out, &err), err);
+	return out;
+}
+
+inline void *device_new_render_pipeline_async(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_device_new_render_pipeline_async((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), &out, &err), err);
 	return out;
 }
 
@@ -256,6 +278,13 @@ inline void command_buffer_synchronize(void *self, void *texture) {
 	hxn::check(hxn_gpu_metal_command_buffer_synchronize((hxn_handle *)self, (hxn_handle *)texture, &err), err);
 }
 
+inline void *command_buffer_completed(void *self) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_command_buffer_completed((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
 inline void command_buffer_present(void *self, void *drawable) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_command_buffer_present((hxn_handle *)self, (hxn_handle *)drawable, &err), err);
@@ -415,6 +444,70 @@ inline void *drawable_texture(void *self) {
 inline void drawable_drop(void *self) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_drawable_drop((hxn_handle *)self, &err), err);
+}
+
+inline bool outbox_wait(int milliseconds) {
+	// The collector may run while this thread waits.
+	hxn::Blocking zone;
+	return hxn_gpu_metal_outbox_wait(milliseconds) != 0;
+}
+
+inline int outbox_next() {
+	return hxn_gpu_metal_outbox_next();
+}
+
+inline int future_state(void *self) {
+	int out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_state((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
+inline int future_wait(void *self, int milliseconds) {
+	int out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn_status status;
+	{
+		hxn::Blocking zone;
+		status = hxn_gpu_metal_future_wait((hxn_handle *)self, milliseconds, &out, &err);
+	}
+	hxn::check(status, err);
+	return out;
+}
+
+inline int future_watch(void *self) {
+	int out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_watch((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
+inline void *future_take_library(void *self) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_take_library((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
+inline void *future_take_compute_pipeline(void *self) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_take_compute_pipeline((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
+inline void *future_take_render_pipeline(void *self) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_take_render_pipeline((hxn_handle *)self, &out, &err), err);
+	return out;
+}
+
+inline bool future_take_unit(void *self) {
+	int out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_future_take_unit((hxn_handle *)self, &out, &err), err);
+	return out != 0;
 }
 
 }

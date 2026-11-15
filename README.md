@@ -68,6 +68,22 @@ All in the package `gpu.metal`:
 Every object holds its Metal object until `close()`. Metal's errors, such as
 a shader that does not compile, are thrown as Haxe exceptions.
 
+## Futures
+
+Some calls return an `hxn.Future` (from the `hxn` haxelib, installed with this
+one) instead of blocking:
+
+- `CommandBuffer.completed()` settles when the GPU has finished the buffer,
+  and fails with Metal's error if it did not. Ask for it before `commit()`.
+  `waitUntilCompleted()` is the blocking form.
+- `Device.newLibraryFromSourceAsync`, `newComputePipelineAsync` and
+  `newRenderPipelineAsync` compile on Metal's threads, so loading shaders does
+  not stall a frame.
+
+`await()` waits for the result, and `then` takes a callback. Callbacks run
+through `hxn.Loop` on the Haxe event loop; a program with its own frame loop
+sets `hxn.Loop.manual` and calls `hxn.Loop.sync()` once a frame.
+
 ## Shaders from hxnsl
 
 - Naga, which writes the MSL, appends `_` to the entry points MSL reserves:

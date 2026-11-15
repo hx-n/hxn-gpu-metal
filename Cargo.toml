@@ -22,12 +22,14 @@ haxe-flags = ["-lib", "hxnsl"]
 
 [dependencies]
 hxn = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.1" }
+hxn-future = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.1" }
 
 [target.'cfg(target_vendor = "apple")'.dependencies]
 objc2 = "0.6"
+block2 = "0.6"
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSError", "NSObject"] }
 objc2-metal = { version = "0.3", default-features = false, features = [
-    "std", "dispatch2", "MTLDevice", "MTLBuffer", "MTLResource", "MTLAllocation", "MTLTexture", "MTLTypes",
+    "std", "dispatch2", "block2", "MTLDevice", "MTLBuffer", "MTLResource", "MTLAllocation", "MTLTexture", "MTLTypes",
     "MTLPixelFormat", "MTLLibrary", "MTLCommandQueue", "MTLCommandBuffer", "MTLCommandEncoder",
     "MTLComputeCommandEncoder", "MTLRenderCommandEncoder", "MTLBlitCommandEncoder", "MTLComputePipeline",
     "MTLRenderPipeline", "MTLRenderPass", "MTLSampler", "MTLVertexDescriptor", "MTLDrawable",

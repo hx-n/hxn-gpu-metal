@@ -68,6 +68,11 @@ then `commands.renderEncoder(target, LoadAction.Clear, r, g, b, a)`,
   command buffers, buffers, textures, pipelines and libraries when done.
 - `end()` each encoder before the next encoder or `commit()`.
   `waitUntilCompleted()` blocks, and throws if the GPU reported an error.
+- Without blocking: `var done = commands.completed();` before `commit()`, then
+  `done.then(...)` or `done.await()`. `newLibraryFromSourceAsync`,
+  `newComputePipelineAsync` and `newRenderPipelineAsync` return futures of the
+  object. `then` callbacks run through `hxn.Loop`; a custom frame loop sets
+  `hxn.Loop.manual = true` and calls `hxn.Loop.sync()` each frame.
 - Uniform values: fill `Bytes.alloc(Shader.PARAMS_SIZE)` at the
   `PARAMS_<name>` byte offsets and bind with `setFragmentBytes` or
   `setVertexBytes` (up to 4 KiB), or a buffer.
