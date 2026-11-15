@@ -70,9 +70,7 @@ jobs:
           path: ${{ env.ZIP }}
 
   # What a Haxe developer does, with no Rust: install the ZIP and build the
-  # Metal check against it, then run it on Ash and hxcpp. hxnsl, which
-  # writes the check's shaders, has no release yet, so its tool is built
-  # with Rust; the library itself comes from the ZIP alone.
+  # Metal check against it, then run it on Ash and hxcpp.
   try:
     name: try, ${{ matrix.os }}
     needs: haxelib
@@ -104,13 +102,11 @@ jobs:
           sudo apt-get install -y haxe
           mkdir -p "$HOME/haxelib" && haxelib setup "$HOME/haxelib"
       # The hxn haxelib the package depends on comes from haxelib with it.
-      - uses: dtolnay/rust-toolchain@stable
       - run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
       - name: Install the haxelib, hxnsl and hxcpp
         run: |
           haxelib install hxn-gpu-metal-*.zip --always
-          haxelib git hxnsl https://github.com/hx-n/hxnsl --quiet
-          cargo build --release --manifest-path "$(haxelib libpath hxnsl)/Cargo.toml"
+          haxelib install hxnsl --always
           haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp --quiet
           dir="$(haxelib libpath hxcpp)"
           git -C "$dir" checkout -q 615adc73d5ef28f3f74ea47977c39c4f25ce256d

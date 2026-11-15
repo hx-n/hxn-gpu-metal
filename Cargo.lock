@@ -30,8 +30,8 @@ dependencies = [
 
 [[package]]
 name = "hxn"
-version = "0.3.1"
-source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.1#a5ef7b3add23cd92509015f658d84153d91a98b1"
+version = "0.3.2"
+source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.2#ee1150b3c0b609c7e12fe1a455753adfd2c68387"
 dependencies = [
  "hxn-abi",
  "hxn-macros",
@@ -39,13 +39,13 @@ dependencies = [
 
 [[package]]
 name = "hxn-abi"
-version = "0.3.1"
-source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.1#a5ef7b3add23cd92509015f658d84153d91a98b1"
+version = "0.3.2"
+source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.2#ee1150b3c0b609c7e12fe1a455753adfd2c68387"
 
 [[package]]
 name = "hxn-future"
-version = "0.3.1"
-source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.1#a5ef7b3add23cd92509015f658d84153d91a98b1"
+version = "0.3.2"
+source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.2#ee1150b3c0b609c7e12fe1a455753adfd2c68387"
 dependencies = [
  "hxn-abi",
  "krio-core",
@@ -71,8 +71,8 @@ dependencies = [
 
 [[package]]
 name = "hxn-macros"
-version = "0.3.1"
-source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.1#a5ef7b3add23cd92509015f658d84153d91a98b1"
+version = "0.3.2"
+source = "git+https://github.com/hx-n/hxn.git?tag=v0.3.2#ee1150b3c0b609c7e12fe1a455753adfd2c68387"
 
 [[package]]
 name = "krio-core"

@@ -88,11 +88,6 @@ runs:
     - if: runner.os == 'macOS'
       shell: bash
       run: xcrun -sdk macosx metal --version || xcodebuild -downloadComponent MetalToolchain
-    # hxnsl, which writes the check's shaders. It has no release yet, so its
-    # tool is built from source.
+    # hxnsl, which writes the check's shaders, with its tool prebuilt.
     - shell: bash
-      run: |
-        haxelib git hxnsl https://github.com/hx-n/hxnsl --quiet
-        dir="$(haxelib libpath hxnsl)"
-        cargo build --release --manifest-path "$dir/Cargo.toml"
-        echo "HXNSL_TOOL=$dir/target/release/hxnsl" >> "$GITHUB_ENV"
+      run: haxelib install hxnsl --always

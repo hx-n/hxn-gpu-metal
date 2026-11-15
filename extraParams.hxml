@@ -1,1 +1,2 @@
 --macro hxn.Bind.lib("gpu_metal")
+--macro gpu.metal.Shaders.register()
