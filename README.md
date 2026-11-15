@@ -4,14 +4,14 @@
 [![hxcpp](https://github.com/hx-n/hxn-gpu-metal/actions/workflows/hxcpp.yml/badge.svg)](https://github.com/hx-n/hxn-gpu-metal/actions/workflows/hxcpp.yml)
 [![CPPIA](https://github.com/hx-n/hxn-gpu-metal/actions/workflows/cppia.yml/badge.svg)](https://github.com/hx-n/hxn-gpu-metal/actions/workflows/cppia.yml)
 
-Metal for Haxe on Ash, HashLink, hxcpp and CPPIA, on macOS and iOS. It wraps
-Apple's Metal framework directly, with no wgpu or Naga in between, and keeps
-Metal's own conventions: a device makes buffers, textures, libraries and pipelines,
-and a command queue's command buffers record compute and render passes.
+Metal bindings for Haxe on Ash, HashLink, hxcpp and CPPIA, on macOS and iOS.
+It calls Apple's Metal framework directly, with no wgpu or naga layer. The
+API follows Metal: `Device`, buffers, textures, libraries, pipelines, command
+queues, and command buffers with compute and render passes.
 
 Shaders come from [hxnsl](https://github.com/hx-n/hxnsl), which compiles HXSL
-to MSL at compile time and reports, in `MSL_SLOTS`, the argument index
-each resource takes. The driver binds by those indices.
+to MSL at compile time and lists each resource's argument index in
+`MSL_SLOTS`. The driver binds by those indices.
 
 ```haxe
 import gpu.metal.*;
