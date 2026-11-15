@@ -1,5 +1,5 @@
-//! Metal for Haxe: a thin layer over Apple's Metal framework, shaped like Metal itself. Shaders
-//! come from hxnsl as MSL, or as a metallib built from it, and are bound by the argument
+//! Metal for Haxe: a thin layer over Apple's Metal framework, keeping Metal's conventions.
+//! Shaders come from hxnsl as MSL, or as a metallib compiled from it, and are bound by the argument
 //! indices hxnsl reports in `MSL_SLOTS`.
 //!
 //! The `_async` constructors and `CommandBuffer.completed` settle a future from the completion
