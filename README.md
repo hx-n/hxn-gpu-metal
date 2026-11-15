@@ -6,7 +6,7 @@
 
 Metal for Haxe on Ash, HashLink, hxcpp and CPPIA, on macOS and iOS. It wraps
 Apple's Metal framework directly, with no wgpu or Naga in between, and keeps
-Metal's own shape: a device makes buffers, textures, libraries and pipelines,
+Metal's own conventions: a device makes buffers, textures, libraries and pipelines,
 and a command queue's command buffers record compute and render passes.
 
 Shaders come from [hxnsl](https://github.com/hx-n/hxnsl), which compiles HXSL
