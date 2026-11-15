@@ -28,9 +28,8 @@ encoder.setPipeline(pipeline);
 encoder.setBuffer(data, 0, index);                         // from Tripled.MSL_SLOTS
 encoder.dispatchThreads(64, 1, 1, 16, 1, 1);
 encoder.end();
+commands.completed().then(_ -> trace(data.read(0, 64 * 4)));  // once the GPU is done
 commands.commit();
-commands.waitUntilCompleted();
-var output = data.read(0, 64 * 4);
 ```
 
 [`examples/check/Main.hx`](https://github.com/hx-n/hxn-gpu-metal/blob/main/examples/check/Main.hx)

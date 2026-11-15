@@ -36,9 +36,9 @@ encoder.setPipeline(pipeline);
 encoder.setBuffer(data, 0, slot(Tripled.MSL_SLOTS, "main", Tripled.BUFFER_data_GROUP, Tripled.BUFFER_data));
 encoder.dispatchThreads(64, 1, 1, 16, 1, 1);     // threads, then threadgroup size
 encoder.end();
+commands.completed().then(_ -> use(data.read(0, 64 * 4)));   // before commit()
 commands.commit();
-commands.waitUntilCompleted();
-var result = data.read(0, 64 * 4);
+// or, blocking: commands.commit(); commands.waitUntilCompleted();
 ```
 
 where `slot` finds the entry point in `MSL_SLOTS` by its WGSL name and returns

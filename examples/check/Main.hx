@@ -31,13 +31,17 @@ class Main {
 			return;
 		}
 		var queue = device.newCommandQueue();
-		compute(device, queue);
-		render(device, queue);
-		queue.close();
-		device.close();
+		// The compute pass completes in a callback from the Haxe event loop, after main
+		// returns, and the render pass runs from there.
+		compute(device, queue, () -> {
+			render(device, queue);
+			queue.close();
+			device.close();
+		});
+		Sys.println("compute: committed");
 	}
 
-	static function compute(device:Device, queue:CommandQueue) {
+	static function compute(device:Device, queue:CommandQueue, next:() -> Void) {
 		// Compiled on Metal's threads; await() takes each result when it is ready.
 		var library = device.newLibraryFromSourceAsync(Tripled.MSL).await();
 		var kernel = library.functionNamed("main_");
@@ -64,13 +68,24 @@ class Main {
 		encoder.end();
 		var done = commands.completed();
 		commands.commit();
-		done.await();
+		// Metal takes no completion handler once the buffer is committed.
+		var refused = try {
+			commands.completed();
+			false;
+		} catch (e:haxe.Exception) true;
+		check(refused, "completed() was accepted after commit()");
 
-		var output = data.read(0, count * 4);
-		for (i in 0...count)
-			check(output.getInt32(i * 4) == i * 3 + 1, 'value $i is ${output.getInt32(i * 4)}, not ${i * 3 + 1}');
-		Sys.println('compute: $count values tripled plus one, the last ${output.getInt32((count - 1) * 4)}');
-		closeAll([encoder, commands, data, pipeline, kernel, library]);
+		done.then(_ -> {
+			var output = data.read(0, count * 4);
+			for (i in 0...count)
+				check(output.getInt32(i * 4) == i * 3 + 1, 'value $i is ${output.getInt32(i * 4)}, not ${i * 3 + 1}');
+			Sys.println('compute: $count values tripled plus one, the last ${output.getInt32((count - 1) * 4)}');
+			closeAll([encoder, commands, data, pipeline, kernel, library]);
+			next();
+		}, e -> {
+			Sys.println('compute failed: ${e.message}');
+			hxn.Loop.exit(1);
+		});
 	}
 
 	static function render(device:Device, queue:CommandQueue) {
