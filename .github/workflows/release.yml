@@ -1,0 +1,158 @@
+name: release
+
+# Builds the haxelib: the generated Haxe classes and the native libraries for
+# each platform, so a program needs only Haxe, and tries it on each platform
+# without Rust. A tag `v*` then publishes it as a release asset and submits it
+# to haxelib; run by hand, it is a dry run that keeps the ZIP as an artifact.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  package:
+    name: package, ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-latest, name: macos-aarch64 }
+          # Cross-compiled static libraries: hxcpp links one into the program,
+          # and Ash links one into a HashLink program for a mobile device.
+          # GitHub has no Intel macOS runner to build an .hdll on, so Intel
+          # Macs get the hxcpp library alone.
+          - { os: macos-latest, name: macos-x86_64,  runtimes: cpp,    target: x86_64-apple-darwin }
+          - { os: macos-latest, name: ios,           runtimes: hl cpp, target: aarch64-apple-ios }
+          - { os: macos-latest, name: ios-simulator, runtimes: hl cpp, target: aarch64-apple-ios-sim }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          runtime: package
+      - if: matrix.target
+        run: rustup target add ${{ matrix.target }}
+      - run: hxn package ${{ matrix.runtimes || 'hl cpp' }} --release ${{ matrix.target && format('--target {0}', matrix.target) || '' }} --out package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.name }}
+          path: package
+
+  haxelib:
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: parts
+      # The classes and the manifest are the same on every platform; each
+      # platform adds its native/<triple>/.
+      - run: |
+          mkdir haxelib
+          cp -R parts/package-macos-aarch64/. haxelib/
+          for part in parts/*/; do
+            cp -R "$part/native/." haxelib/native/
+          done
+          cp -R README.md LICENSE skills haxelib/
+          ls haxelib/native
+          version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)"
+          (cd haxelib && zip -qr "../hxn-gpu-metal-$version.zip" .)
+          echo "ZIP=hxn-gpu-metal-$version.zip" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: haxelib
+          path: ${{ env.ZIP }}
+
+  # What a Haxe developer does, with no Rust: install the ZIP and build the
+  # Metal check against it, then run it on Ash and hxcpp. hxnsl, which
+  # writes the check's shaders, has no release yet, so its tool is built
+  # with Rust; the library itself comes from the ZIP alone.
+  try:
+    name: try, ${{ matrix.os }}
+    needs: haxelib
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: examples
+      - uses: actions/download-artifact@v4
+        with:
+          name: haxelib
+      - if: runner.os == 'Windows' || (runner.os == 'Linux' && runner.arch != 'ARM64')
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.6
+      - if: runner.os == 'macOS'
+        run: |
+          brew install haxe
+          mkdir -p "$HOME/haxelib" && haxelib setup "$HOME/haxelib"
+      # setup-haxe has no Linux ARM64 build; Ubuntu packages one.
+      - if: runner.os == 'Linux' && runner.arch == 'ARM64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y haxe
+          mkdir -p "$HOME/haxelib" && haxelib setup "$HOME/haxelib"
+      # The hxn haxelib the package depends on comes from haxelib with it.
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install the haxelib, hxnsl and hxcpp
+        run: |
+          haxelib install hxn-gpu-metal-*.zip --always
+          haxelib git hxnsl https://github.com/hx-n/hxnsl --quiet
+          cargo build --release --manifest-path "$(haxelib libpath hxnsl)/Cargo.toml"
+          haxelib git hxcpp https://github.com/HaxeFoundation/hxcpp --quiet
+          dir="$(haxelib libpath hxcpp)"
+          git -C "$dir" checkout -q 615adc73d5ef28f3f74ea47977c39c4f25ce256d
+          (cd "$dir/tools/hxcpp" && haxe compile.hxml)
+      - name: Install Ash
+        run: |
+          case "$RUNNER_OS" in
+            Linux) archive=ash-linux-$([ "$RUNNER_ARCH" = ARM64 ] && echo aarch64 || echo x86_64).tar.gz ;;
+            macOS) archive=ash-macos-aarch64.tar.gz ;;
+            Windows) archive=ash-windows-x86_64.tar.gz ;;
+          esac
+          mkdir -p "$RUNNER_TEMP/ash"
+          # Extracted in place: tar reads a Windows path's drive as a host.
+          (cd "$RUNNER_TEMP/ash" && curl -fsSL "https://github.com/rayzor-blade/ash/releases/download/v0.1.18/$archive" | tar -xz)
+          echo "ASH=$RUNNER_TEMP/ash/ash" >> "$GITHUB_ENV"
+      - name: Build and run on Ash and hxcpp
+        working-directory: examples/check
+        run: |
+          haxe -lib hxn-gpu-metal -lib hxnsl -main Main -hl main.hl
+          "$ASH" main.hl | tee hl.txt
+          haxe -lib hxn-gpu-metal -lib hxnsl -main Main -cpp out
+          out/Main | tee cpp.txt
+          grep -q '^compute: 64 values' hl.txt && grep -q '^compute: 64 values' cpp.txt
+
+  publish:
+    needs: [haxelib, try]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: haxelib
+      - run: echo "ZIP=$(ls hxn-gpu-metal-*.zip)" >> "$GITHUB_ENV"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "$ZIP" --title "$GITHUB_REF_NAME" --notes "$(sed -n 's/^releasenote = "\(.*\)"/\1/p' Cargo.toml)"
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.6
+      # haxelib accepts a new project only from its first contributor.
+      - env:
+          HAXELIB_PASSWORD: ${{ secrets.HAXELIB_PASSWORD }}
+        run: haxelib submit "$ZIP" darmie "$HAXELIB_PASSWORD" --never < /dev/null

@@ -1,0 +1,30 @@
+name: Ash
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    name: Ash, macOS
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          runtime: ash
+      # Fails if the runner has no Metal device, rather than passing on the
+      # line the check prints without one.
+      - run: |
+          hxn check hl --vm ash | tee check.txt
+          grep -q '^compute: 64 values' check.txt

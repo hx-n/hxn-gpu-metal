@@ -1,0 +1,613 @@
+{
+  "hxn": 1,
+  "library": "gpu_metal",
+  "package": "gpu.metal",
+  "enums": [
+    {
+      "name": "PixelFormat",
+      "docs": "The pixel formats a texture or render target can have, with Metal's values.",
+      "variants": [{ "name": "R8Unorm", "value": 10 }, { "name": "R32Float", "value": 55 }, { "name": "Rgba8Unorm", "value": 70 }, { "name": "Rgba8UnormSrgb", "value": 71 }, { "name": "Bgra8Unorm", "value": 80 }, { "name": "Bgra8UnormSrgb", "value": 81 }, { "name": "Rgba16Float", "value": 115 }, { "name": "Rgba32Float", "value": 125 }, { "name": "Depth32Float", "value": 252 }]
+    },
+    {
+      "name": "StorageMode",
+      "docs": "Where a texture's memory lives. `Shared` is CPU-visible; `Private` is GPU-only.",
+      "variants": [{ "name": "Shared", "value": 0 }, { "name": "Managed", "value": 1 }, { "name": "Private", "value": 2 }]
+    },
+    {
+      "name": "TextureUsage",
+      "docs": "How a texture is used, as `TextureDescriptor.usage` bits.",
+      "variants": [{ "name": "ShaderRead", "value": 1 }, { "name": "ShaderWrite", "value": 2 }, { "name": "RenderTarget", "value": 4 }]
+    },
+    {
+      "name": "Filter",
+      "variants": [{ "name": "Nearest", "value": 0 }, { "name": "Linear", "value": 1 }]
+    },
+    {
+      "name": "AddressMode",
+      "variants": [{ "name": "ClampToEdge", "value": 0 }, { "name": "Repeat", "value": 2 }, { "name": "MirrorRepeat", "value": 3 }]
+    },
+    {
+      "name": "VertexFormat",
+      "docs": "A vertex attribute's format, with Metal's values.",
+      "variants": [{ "name": "Float", "value": 28 }, { "name": "Float2", "value": 29 }, { "name": "Float3", "value": 30 }, { "name": "Float4", "value": 31 }, { "name": "Int", "value": 32 }, { "name": "UInt", "value": 36 }]
+    },
+    {
+      "name": "LoadAction",
+      "variants": [{ "name": "DontCare", "value": 0 }, { "name": "Load", "value": 1 }, { "name": "Clear", "value": 2 }]
+    },
+    {
+      "name": "Primitive",
+      "variants": [{ "name": "Point", "value": 0 }, { "name": "Line", "value": 1 }, { "name": "LineStrip", "value": 2 }, { "name": "Triangle", "value": 3 }, { "name": "TriangleStrip", "value": 4 }]
+    }
+  ],
+  "records": [
+    {
+      "name": "TextureDescriptor",
+      "fields": [
+        { "name": "width", "type": "i32" },
+        { "name": "height", "type": "i32" },
+        { "name": "format", "type": "PixelFormat" },
+        { "name": "usage", "type": "i32" },
+        { "name": "storage", "type": "StorageMode" }
+      ]
+    },
+    {
+      "name": "SamplerDescriptor",
+      "fields": [
+        { "name": "min_filter", "type": "Filter" },
+        { "name": "mag_filter", "type": "Filter" },
+        { "name": "address", "type": "AddressMode" }
+      ]
+    },
+    {
+      "name": "VertexAttribute",
+      "docs": "One vertex attribute: `location` is the shader's (hxnsl's `INPUT_<name>`), `buffer` the\nargument index its vertex buffer is bound at.",
+      "fields": [
+        { "name": "location", "type": "i32" },
+        { "name": "format", "type": "VertexFormat" },
+        { "name": "offset", "type": "i32" },
+        { "name": "buffer", "type": "i32" }
+      ]
+    },
+    {
+      "name": "VertexLayout",
+      "docs": "The layout of one vertex buffer: its stride in bytes, and whether it advances per instance.",
+      "fields": [
+        { "name": "buffer", "type": "i32" },
+        { "name": "stride", "type": "i32" },
+        { "name": "per_instance", "type": "bool" }
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "name": "Device",
+      "docs": "A GPU, and the maker of every other Metal object.",
+      "methods": [
+        {
+          "name": "system_default",
+          "docs": "The system's default GPU. Fails where there is none, such as a virtual machine without one.",
+          "kind": "static",
+          "params": [],
+          "returns": "Device",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "name",
+          "kind": "method",
+          "params": [],
+          "returns": "str",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "new_buffer",
+          "docs": "A buffer of `length` bytes in memory the CPU and GPU share, zeroed.",
+          "kind": "method",
+          "params": [{ "name": "length", "type": "i64" }],
+          "returns": "Buffer",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_buffer_with",
+          "docs": "A shared buffer holding a copy of `bytes`.",
+          "kind": "method",
+          "params": [{ "name": "bytes", "type": "bytes" }],
+          "returns": "Buffer",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_library_from_source",
+          "docs": "A library from MSL source, compiled now: hxnsl's `MSL`.",
+          "kind": "method",
+          "params": [{ "name": "msl", "type": "str" }],
+          "returns": "Library",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_library",
+          "docs": "A library from a compiled `.metallib`.",
+          "kind": "method",
+          "params": [{ "name": "metallib", "type": "bytes" }],
+          "returns": "Library",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_command_queue",
+          "kind": "method",
+          "params": [],
+          "returns": "CommandQueue",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_compute_pipeline",
+          "kind": "method",
+          "params": [{ "name": "function", "type": "Function" }],
+          "returns": "ComputePipeline",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_render_pipeline",
+          "docs": "A render pipeline drawing to one color target of `format`, with vertex buffers laid out\nas `attributes` and `layouts` describe (both empty when the vertex stage reads none).",
+          "kind": "method",
+          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
+          "returns": "RenderPipeline",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_texture",
+          "kind": "method",
+          "params": [{ "name": "descriptor", "type": "TextureDescriptor" }],
+          "returns": "Texture",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_sampler",
+          "kind": "method",
+          "params": [{ "name": "descriptor", "type": "SamplerDescriptor" }],
+          "returns": "Sampler",
+          "fallible": true,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Buffer",
+      "docs": "GPU memory the CPU can read and write.",
+      "methods": [
+        {
+          "name": "length",
+          "kind": "method",
+          "params": [],
+          "returns": "i64",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "write",
+          "docs": "Copies `bytes` into the buffer at `offset`.",
+          "kind": "method",
+          "params": [{ "name": "offset", "type": "i64" }, { "name": "bytes", "type": "bytes" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "read",
+          "docs": "`length` bytes from `offset`.",
+          "kind": "method",
+          "params": [{ "name": "offset", "type": "i64" }, { "name": "length", "type": "i64" }],
+          "returns": "bytes",
+          "fallible": true,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Texture",
+      "docs": "A 2D texture.",
+      "methods": [
+        {
+          "name": "width",
+          "kind": "method",
+          "params": [],
+          "returns": "i32",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "height",
+          "kind": "method",
+          "params": [],
+          "returns": "i32",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "format",
+          "docs": "Its format, or null for one this API does not name.",
+          "kind": "method",
+          "params": [],
+          "returns": "option<PixelFormat>",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "write",
+          "docs": "Replaces the whole texture with `bytes`, rows `bytes_per_row` apart. The texture's storage\nmust be shared or managed.",
+          "kind": "method",
+          "params": [{ "name": "bytes", "type": "bytes" }, { "name": "bytes_per_row", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "read",
+          "docs": "The whole texture's bytes, rows `bytes_per_row` apart. A managed texture must be\nsynchronized first (`CommandBuffer.synchronize`) after the GPU wrote it.",
+          "kind": "method",
+          "params": [{ "name": "bytes_per_row", "type": "i32" }],
+          "returns": "bytes",
+          "fallible": true,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Sampler",
+      "methods": []
+    },
+    {
+      "name": "Library",
+      "docs": "Compiled shader functions.",
+      "methods": [
+        {
+          "name": "function_named",
+          "docs": "The function `name`, as the MSL names it.",
+          "kind": "method",
+          "params": [{ "name": "name", "type": "str" }],
+          "returns": "Function",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "function_names",
+          "docs": "The names of the library's functions.",
+          "kind": "method",
+          "params": [],
+          "returns": "list<str>",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Function",
+      "methods": [
+        {
+          "name": "name",
+          "kind": "method",
+          "params": [],
+          "returns": "str",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "ComputePipeline",
+      "methods": [
+        {
+          "name": "thread_execution_width",
+          "docs": "The SIMD width: a threadgroup size that is a multiple of it fills the GPU's lanes.",
+          "kind": "method",
+          "params": [],
+          "returns": "i32",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "max_total_threads_per_threadgroup",
+          "kind": "method",
+          "params": [],
+          "returns": "i32",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "RenderPipeline",
+      "methods": []
+    },
+    {
+      "name": "CommandQueue",
+      "methods": [
+        {
+          "name": "command_buffer",
+          "kind": "method",
+          "params": [],
+          "returns": "CommandBuffer",
+          "fallible": true,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "CommandBuffer",
+      "docs": "Commands recorded through its encoders, then committed to the GPU.",
+      "methods": [
+        {
+          "name": "compute_encoder",
+          "kind": "mutating",
+          "params": [],
+          "returns": "ComputeEncoder",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "render_encoder",
+          "docs": "A render pass to `target`, its one color attachment, which `load` starts from: the\ntarget as it is, cleared to `red`, `green`, `blue`, `alpha`, or undefined.",
+          "kind": "mutating",
+          "params": [{ "name": "target", "type": "Texture" }, { "name": "load", "type": "LoadAction" }, { "name": "red", "type": "f64" }, { "name": "green", "type": "f64" }, { "name": "blue", "type": "f64" }, { "name": "alpha", "type": "f64" }],
+          "returns": "RenderEncoder",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "synchronize",
+          "docs": "Makes a managed texture's GPU writes visible to `Texture.read` once this buffer completes.",
+          "kind": "mutating",
+          "params": [{ "name": "texture", "type": "Texture" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "present",
+          "docs": "Presents `drawable` when the buffer's commands complete.",
+          "kind": "mutating",
+          "params": [{ "name": "drawable", "type": "Drawable" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "commit",
+          "kind": "mutating",
+          "params": [],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "wait_until_completed",
+          "docs": "Waits for the GPU to finish the buffer, and fails with Metal's error if it did not.",
+          "kind": "mutating",
+          "params": [],
+          "returns": "void",
+          "fallible": true,
+          "blocking": true
+        }
+      ]
+    },
+    {
+      "name": "ComputeEncoder",
+      "docs": "Records compute commands. `end` closes it before the next encoder or `commit`.",
+      "methods": [
+        {
+          "name": "set_pipeline",
+          "kind": "mutating",
+          "params": [{ "name": "pipeline", "type": "ComputePipeline" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "set_buffer",
+          "docs": "Binds `buffer` at argument `index`: the kernel's `MSL_SLOTS` buffer index.",
+          "kind": "mutating",
+          "params": [{ "name": "buffer", "type": "Buffer" }, { "name": "offset", "type": "i64" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_bytes",
+          "docs": "Binds a copy of `bytes`, up to 4 KiB, at argument `index`.",
+          "kind": "mutating",
+          "params": [{ "name": "bytes", "type": "bytes" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_texture",
+          "kind": "mutating",
+          "params": [{ "name": "texture", "type": "Texture" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_sampler",
+          "kind": "mutating",
+          "params": [{ "name": "sampler", "type": "Sampler" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "dispatch_threads",
+          "docs": "Runs `x` by `y` by `z` threads in all, in threadgroups of `group_x` by `group_y` by\n`group_z`; the last threadgroup in each dimension may be partial.",
+          "kind": "mutating",
+          "params": [{ "name": "x", "type": "i32" }, { "name": "y", "type": "i32" }, { "name": "z", "type": "i32" }, { "name": "group_x", "type": "i32" }, { "name": "group_y", "type": "i32" }, { "name": "group_z", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "dispatch_threadgroups",
+          "docs": "Runs `x` by `y` by `z` threadgroups of `group_x` by `group_y` by `group_z` threads.",
+          "kind": "mutating",
+          "params": [{ "name": "x", "type": "i32" }, { "name": "y", "type": "i32" }, { "name": "z", "type": "i32" }, { "name": "group_x", "type": "i32" }, { "name": "group_y", "type": "i32" }, { "name": "group_z", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "end",
+          "kind": "mutating",
+          "params": [],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "RenderEncoder",
+      "docs": "Records draw commands for one render pass. `end` closes it.",
+      "methods": [
+        {
+          "name": "set_pipeline",
+          "kind": "mutating",
+          "params": [{ "name": "pipeline", "type": "RenderPipeline" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "set_vertex_buffer",
+          "kind": "mutating",
+          "params": [{ "name": "buffer", "type": "Buffer" }, { "name": "offset", "type": "i64" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_fragment_buffer",
+          "kind": "mutating",
+          "params": [{ "name": "buffer", "type": "Buffer" }, { "name": "offset", "type": "i64" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_vertex_bytes",
+          "docs": "Binds a copy of `bytes`, up to 4 KiB, at the vertex stage's argument `index`.",
+          "kind": "mutating",
+          "params": [{ "name": "bytes", "type": "bytes" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_fragment_bytes",
+          "docs": "Binds a copy of `bytes`, up to 4 KiB, at the fragment stage's argument `index`.",
+          "kind": "mutating",
+          "params": [{ "name": "bytes", "type": "bytes" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_fragment_texture",
+          "kind": "mutating",
+          "params": [{ "name": "texture", "type": "Texture" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_fragment_sampler",
+          "kind": "mutating",
+          "params": [{ "name": "sampler", "type": "Sampler" }, { "name": "index", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_viewport",
+          "kind": "mutating",
+          "params": [{ "name": "x", "type": "f64" }, { "name": "y", "type": "f64" }, { "name": "width", "type": "f64" }, { "name": "height", "type": "f64" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "draw",
+          "docs": "Draws `count` vertices from `start`, `instances` times.",
+          "kind": "mutating",
+          "params": [{ "name": "primitive", "type": "Primitive" }, { "name": "start", "type": "i32" }, { "name": "count", "type": "i32" }, { "name": "instances", "type": "i32" }],
+          "returns": "void",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "end",
+          "kind": "mutating",
+          "params": [],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Layer",
+      "docs": "A CAMetalLayer on a window's view, whose drawables a render pass targets.",
+      "methods": [
+        {
+          "name": "attach",
+          "docs": "A layer drawing with `device` into the view `view`: an `NSView` on macOS (hxn-window's\n`raw(0)` on AppKit) or a `UIView` on iOS (`raw(0)` on UIKit). Only on the main thread.",
+          "kind": "static",
+          "params": [{ "name": "device", "type": "Device" }, { "name": "view", "type": "i64" }, { "name": "format", "type": "PixelFormat" }],
+          "returns": "Layer",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "set_drawable_size",
+          "docs": "Sets the size, in pixels, of the drawables the layer gives.",
+          "kind": "method",
+          "params": [{ "name": "width", "type": "f64" }, { "name": "height", "type": "f64" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "next_drawable",
+          "docs": "The next drawable to render into, or null when none is free in time.",
+          "kind": "method",
+          "params": [],
+          "returns": "Drawable?",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "Drawable",
+      "methods": [
+        {
+          "name": "texture",
+          "docs": "The texture to render into.",
+          "kind": "method",
+          "params": [],
+          "returns": "Texture",
+          "fallible": false,
+          "blocking": false
+        }
+      ]
+    }
+  ]
+}

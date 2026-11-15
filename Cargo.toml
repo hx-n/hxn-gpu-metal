@@ -1,0 +1,39 @@
+[package]
+name = "hxn-gpu-metal"
+version = "0.1.0"
+edition = "2024"
+description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
+repository = "https://github.com/hx-n/hxn-gpu-metal"
+license = "Apache-2.0"
+keywords = ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp"]
+
+[lib]
+name = "hxn_gpu_metal"
+
+[package.metadata.hxn]
+# The native library is `gpu_metal.hdll` or `libgpu_metal.a`.
+library = "gpu_metal"
+haxelib = "hxn-gpu-metal"
+contributors = ["darmie", "rayzor"]
+releasenote = "First release: devices, buffers, textures, samplers, libraries from MSL or metallib, compute and render pipelines, and a CAMetalLayer for a window."
+# The check `hxn check` and `hxn run` build.
+haxe = "examples/check"
+haxe-flags = ["-lib", "hxnsl"]
+
+[dependencies]
+hxn = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.1" }
+
+[target.'cfg(target_vendor = "apple")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSError", "NSObject"] }
+objc2-metal = { version = "0.3", default-features = false, features = [
+    "std", "dispatch2", "MTLDevice", "MTLBuffer", "MTLResource", "MTLAllocation", "MTLTexture", "MTLTypes",
+    "MTLPixelFormat", "MTLLibrary", "MTLCommandQueue", "MTLCommandBuffer", "MTLCommandEncoder",
+    "MTLComputeCommandEncoder", "MTLRenderCommandEncoder", "MTLBlitCommandEncoder", "MTLComputePipeline",
+    "MTLRenderPipeline", "MTLRenderPass", "MTLSampler", "MTLVertexDescriptor", "MTLDrawable",
+    "MTLArgument", "MTLStageInputOutputDescriptor", "MTLPipeline",
+] }
+objc2-quartz-core = { version = "0.3", default-features = false, features = ["std", "CALayer", "CAMetalLayer", "objc2-metal", "objc2-core-foundation"] }
+objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFCGTypes"] }
+dispatch2 = { version = "0.3", default-features = false, features = ["std", "alloc", "objc2", "block2"] }
+raw-window-metal = "1.1"
