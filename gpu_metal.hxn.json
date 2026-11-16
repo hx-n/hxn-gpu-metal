@@ -1,7 +1,7 @@
 {
   "hxn": 1,
   "library": "gpu_metal",
-  "package": "gpu.metal",
+  "package": "hxn.gpu.metal",
   "enums": [
     {
       "name": "PixelFormat",

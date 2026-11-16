@@ -1,4 +1,4 @@
-import gpu.metal.*;
+import hxn.gpu.metal.*;
 import haxe.io.Bytes;
 import hxnsl.Layout.MslEntry;
 import Shaders;
@@ -90,7 +90,7 @@ class Main {
 
 	static function render(device:Device, queue:CommandQueue) {
 		// The metallib the build made, or the MSL compiled now where it had no Metal compiler.
-		var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
+		var library = hxn.gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
 		var vertex = library.functionNamed("vertex_main");
 		var fragment = library.functionNamed("fragment_main");
 		// The quad's positions sit in a vertex buffer at an index no shader resource uses.

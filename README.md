@@ -14,7 +14,7 @@ to MSL at compile time and lists each resource's argument index in
 `MSL_SLOTS`. The driver binds by those indices.
 
 ```haxe
-import gpu.metal.*;
+import hxn.gpu.metal.*;
 
 var device = Device.systemDefault();
 var queue = device.newCommandQueue();
@@ -51,7 +51,7 @@ machine.
 
 ## Classes
 
-All in the package `gpu.metal`:
+All in the package `hxn.gpu.metal`:
 
 | Class | |
 |---|---|
@@ -85,7 +85,7 @@ sets `hxn.Loop.manual` and calls `hxn.Loop.sync()` once a frame.
 
 ## Shaders from hxnsl
 
-A shader for this driver implements `gpu.metal.Shader`, which extends
+A shader for this driver implements `hxn.gpu.metal.Shader`, which extends
 `hxnsl.Shader`. Besides hxnsl's `MSL` and `MSL_SLOTS`, it gets `metallib()`:
 the shader compiled to a Metal library at compile time, by
 `xcrun metal` and `metallib`, for the SDK the program targets (macOS, or iOS
@@ -93,9 +93,9 @@ and the iOS simulator with hxcpp's `-D iphoneos` or `-D iphonesim`).
 `Shaders.library` loads it, so the program compiles no shader:
 
 ```haxe
-class Tinted implements gpu.metal.Shader { static var SRC = { ... }; }
+class Tinted implements hxn.gpu.metal.Shader { static var SRC = { ... }; }
 
-var library = gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
+var library = hxn.gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
 ```
 
 Where the compiling machine has no Metal compiler, compilation warns once,

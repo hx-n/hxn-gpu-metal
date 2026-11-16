@@ -26,7 +26,7 @@ use objc2_metal::{
 };
 use objc2_quartz_core::{CAMetalDrawable, CAMetalLayer};
 
-hxn::package!("gpu.metal");
+hxn::package!("hxn.gpu.metal");
 
 /// A thread-safe Metal object: a device, queue, resource, pipeline, library or drawable, which
 /// Apple documents as usable from any thread.
