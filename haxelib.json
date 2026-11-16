@@ -4,7 +4,7 @@
   "description": "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework",
   "url": "https://github.com/hx-n/hxn-gpu-metal",
   "license": "Apache",
-  "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native"],
+  "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native", "cross"],
   "contributors": ["darmie", "rayzor"],
   "releasenote": "Moves to the hxn.gpu.metal package, on hxn 0.3.5.",
   "dependencies": { "hxn": "0.3.5" }

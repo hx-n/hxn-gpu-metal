@@ -5,7 +5,7 @@ edition = "2024"
 description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
 repository = "https://github.com/hx-n/hxn-gpu-metal"
 license = "Apache-2.0"
-keywords = ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native"]
+keywords = ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native", "cross"]
 
 [lib]
 name = "hxn_gpu_metal"
