@@ -31,6 +31,8 @@ package hxn.gpu.metal;
 @:noCompletion class HxnGpuMetalNative {
 	static function memory_held():Float;
 	static function memory_wanted():Bool;
+	static function log_level(level:Int):Void;
+	public static function log_take():Null<haxe.io.Bytes>;
 	static function device_system_default():hxn.Handle;
 	static function device_name(self:hxn.Handle):String;
 	static function device_new_buffer(self:hxn.Handle, length:haxe.Int64):hxn.Handle;

@@ -7,5 +7,6 @@ package hxn.gpu.metal;
 	a delivery does.
 **/
 class HxnGpuMetalMemory {
+	@:keep static final logging = hxn.Log.attach(level -> HxnGpuMetalNative.log_level(level), () -> HxnGpuMetalNative.log_take());
 	public static final meter = new hxn.Gc.Meter(() -> HxnGpuMetalNative.memory_held(), () -> HxnGpuMetalNative.memory_wanted());
 }

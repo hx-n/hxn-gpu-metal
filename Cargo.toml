@@ -1,6 +1,6 @@
 [package]
 name = "hxn-gpu-metal"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
 repository = "https://github.com/hx-n/hxn-gpu-metal"
@@ -15,7 +15,7 @@ name = "hxn_gpu_metal"
 library = "gpu_metal"
 haxelib = "hxn-gpu-metal"
 contributors = ["darmie", "rayzor"]
-releasenote = "Moves to the hxn.gpu.metal package, on hxn 0.3.5."
+releasenote = "Use hxn 0.3.9 shared logging with application-owned filtering and sinks; retain pinned dependency redistribution notices."
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]
@@ -23,8 +23,8 @@ haxe-flags = ["-lib", "hxnsl"]
 init = ["hxn.gpu.metal.Shaders.register()"]
 
 [dependencies]
-hxn = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.5" }
-hxn-future = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.5" }
+hxn = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.9" }
+hxn-future = { git = "https://github.com/hx-n/hxn.git", tag = "v0.3.9" }
 
 [target.'cfg(target_vendor = "apple")'.dependencies]
 objc2 = "0.6"

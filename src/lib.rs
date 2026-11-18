@@ -206,6 +206,7 @@ pub struct Device {
 impl Device {
     /// The system's default GPU. Fails where there is none, such as a virtual machine without one.
     pub fn system_default() -> Result<Device, String> {
+        hxn::log::debug!(target: "hxn.gpu.metal", "opening the system default Metal device");
         let device = MTLCreateSystemDefaultDevice().ok_or("this machine has no Metal device")?;
         Ok(Device {
             device: Shared(device),

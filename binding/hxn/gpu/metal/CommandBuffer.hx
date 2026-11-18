@@ -2,9 +2,10 @@
 package hxn.gpu.metal;
 
 /** Commands recorded through its encoders, then committed to the GPU. **/
+@:build(hxn.Log.bind())
 class CommandBuffer {
 	@:noCompletion public var hxnRaw:hxn.Handle;
-	@:noCompletion static final hxnMemory = HxnGpuMetalMemory.meter;
+	@:keep @:noCompletion static final hxnMemory = HxnGpuMetalMemory.meter;
 
 	/** An object for a value the library returned. **/
 	@:noCompletion public static function hxnAdopt(hxnRaw:hxn.Handle):CommandBuffer {
