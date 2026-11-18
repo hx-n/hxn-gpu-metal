@@ -1,0 +1,197 @@
+{
+  "inputs": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "e58f2aa1e0c5b76b2e45a7e824879783e7f7d9c9a3a473e3fa4a79fde61fa0c6"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "173f12f7cd616142a29336d8ceb7552ba779a10268d9268c1ff5393172cc3088"
+    }
+  ],
+  "packages": [
+    {
+      "name": "bitflags",
+      "version": "2.13.2",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/bitflags/bitflags",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/bitflags-2.13.2/LICENSE-APACHE",
+        "licenses/bitflags-2.13.2/LICENSE-MIT"
+      ]
+    },
+    {
+      "name": "block2",
+      "version": "0.6.2",
+      "license": "MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/block2-0.6.2/LICENSE.md"
+      ]
+    },
+    {
+      "name": "dispatch2",
+      "version": "0.3.1",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/dispatch2-0.3.1/LICENSE.md"
+      ]
+    },
+    {
+      "name": "hl_abi",
+      "version": "0.1.0",
+      "license": "MIT",
+      "repository": null,
+      "source": "git+https://github.com/rayzor-blade/hl_abi#f38e06df4c7f7d7e79348df345c71ea70770a82d",
+      "files": [
+        "licenses/hl_abi-0.1.0/LICENSE-MIT",
+        "licenses/hl_abi-0.1.0/UPSTREAM-MANIFEST.txt"
+      ]
+    },
+    {
+      "name": "hxn",
+      "version": "0.3.5",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/hx-n/hxn",
+      "source": "git+https://github.com/hx-n/hxn.git?tag=v0.3.5#aafa0d817fd61ecda39b3fee03e941bdb5329ff4",
+      "files": [
+        "licenses/hxn-0.3.5/LICENSE"
+      ]
+    },
+    {
+      "name": "hxn-abi",
+      "version": "0.3.5",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/hx-n/hxn",
+      "source": "git+https://github.com/hx-n/hxn.git?tag=v0.3.5#aafa0d817fd61ecda39b3fee03e941bdb5329ff4",
+      "files": [
+        "licenses/hxn-abi-0.3.5/LICENSE"
+      ]
+    },
+    {
+      "name": "hxn-future",
+      "version": "0.3.5",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/hx-n/hxn",
+      "source": "git+https://github.com/hx-n/hxn.git?tag=v0.3.5#aafa0d817fd61ecda39b3fee03e941bdb5329ff4",
+      "files": [
+        "licenses/hxn-future-0.3.5/LICENSE"
+      ]
+    },
+    {
+      "name": "hxn-macros",
+      "version": "0.3.5",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/hx-n/hxn",
+      "source": "git+https://github.com/hx-n/hxn.git?tag=v0.3.5#aafa0d817fd61ecda39b3fee03e941bdb5329ff4",
+      "files": [
+        "licenses/hxn-macros-0.3.5/LICENSE"
+      ]
+    },
+    {
+      "name": "krio-core",
+      "version": "0.1.0",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/darmie/krio",
+      "source": "git+https://github.com/darmie/krio?rev=ecf740f8de98965d3c0f238b4d22636318821836#ecf740f8de98965d3c0f238b4d22636318821836",
+      "files": [
+        "licenses/krio-core-0.1.0/LICENSE"
+      ]
+    },
+    {
+      "name": "krio-parallel",
+      "version": "0.1.0",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/darmie/krio",
+      "source": "git+https://github.com/darmie/krio?rev=ecf740f8de98965d3c0f238b4d22636318821836#ecf740f8de98965d3c0f238b4d22636318821836",
+      "files": [
+        "licenses/krio-parallel-0.1.0/LICENSE"
+      ]
+    },
+    {
+      "name": "krio-runtime",
+      "version": "0.1.0",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/darmie/krio",
+      "source": "git+https://github.com/darmie/krio?rev=ecf740f8de98965d3c0f238b4d22636318821836#ecf740f8de98965d3c0f238b4d22636318821836",
+      "files": [
+        "licenses/krio-runtime-0.1.0/LICENSE"
+      ]
+    },
+    {
+      "name": "objc2",
+      "version": "0.6.5",
+      "license": "MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-0.6.5/LICENSE.md"
+      ]
+    },
+    {
+      "name": "objc2-core-foundation",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-core-foundation-0.3.2/LICENSE.md"
+      ]
+    },
+    {
+      "name": "objc2-encode",
+      "version": "4.1.0",
+      "license": "MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-encode-4.1.0/LICENSE.md"
+      ]
+    },
+    {
+      "name": "objc2-foundation",
+      "version": "0.3.2",
+      "license": "MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-foundation-0.3.2/LICENSE.md"
+      ]
+    },
+    {
+      "name": "objc2-metal",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-metal-0.3.2/LICENSE.md"
+      ]
+    },
+    {
+      "name": "objc2-quartz-core",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "repository": "https://github.com/madsmtm/objc2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/objc2-quartz-core-0.3.2/LICENSE.md"
+      ]
+    },
+    {
+      "name": "raw-window-metal",
+      "version": "1.1.0",
+      "license": "MIT OR Apache-2.0",
+      "repository": "https://github.com/rust-windowing/raw-window-metal",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "files": [
+        "licenses/raw-window-metal-1.1.0/LICENSE-APACHE",
+        "licenses/raw-window-metal-1.1.0/LICENSE-MIT"
+      ]
+    }
+  ]
+}
