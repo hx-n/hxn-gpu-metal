@@ -113,6 +113,20 @@ inline void *device_new_render_pipeline_async(void *self, void *vertex, void *fr
 	return out;
 }
 
+inline void *device_new_render_pipeline_with(void *self, void *vertex, void *fragment, Array<unsigned char> targets, bool has_depth, int depth, Array<unsigned char> attributes, Array<unsigned char> layouts) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_device_new_render_pipeline_with((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, hxn::slice(targets), has_depth ? 1 : 0, depth, hxn::slice(attributes), hxn::slice(layouts), &out, &err), err);
+	return out;
+}
+
+inline void *device_new_depth_state(void *self, int compare, bool write) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_device_new_depth_state((hxn_handle *)self, compare, write ? 1 : 0, &out, &err), err);
+	return out;
+}
+
 inline void *device_new_texture(void *self, Array<unsigned char> descriptor) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;
@@ -130,6 +144,33 @@ inline void *device_new_sampler(void *self, Array<unsigned char> descriptor) {
 inline void device_drop(void *self) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_device_drop((hxn_handle *)self, &err), err);
+}
+
+inline void depth_state_drop(void *self) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_depth_state_drop((hxn_handle *)self, &err), err);
+}
+
+inline void *render_targets_create() {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_targets_create(&out, &err), err);
+	return out;
+}
+
+inline void render_targets_color(void *self, void *target, int load, double red, double green, double blue, double alpha) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_targets_color((hxn_handle *)self, (hxn_handle *)target, load, red, green, blue, alpha, &err), err);
+}
+
+inline void render_targets_depth(void *self, void *target, int load, double clear) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_targets_depth((hxn_handle *)self, (hxn_handle *)target, load, clear, &err), err);
+}
+
+inline void render_targets_drop(void *self) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_targets_drop((hxn_handle *)self, &err), err);
 }
 
 inline cpp::Int64 buffer_length(void *self) {
@@ -286,6 +327,13 @@ inline void *command_buffer_render_encoder(void *self, void *target, int load, d
 	return out;
 }
 
+inline void *command_buffer_render_encoder_with(void *self, void *targets) {
+	hxn_handle *out = 0;
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_command_buffer_render_encoder_with((hxn_handle *)self, (hxn_handle *)targets, &out, &err), err);
+	return out;
+}
+
 inline void command_buffer_synchronize(void *self, void *texture) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_command_buffer_synchronize((hxn_handle *)self, (hxn_handle *)texture, &err), err);
@@ -406,6 +454,11 @@ inline void render_encoder_set_fragment_sampler(void *self, void *sampler, int i
 inline void render_encoder_set_viewport(void *self, double x, double y, double width, double height) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_render_encoder_set_viewport((hxn_handle *)self, x, y, width, height, &err), err);
+}
+
+inline void render_encoder_set_depth_state(void *self, void *state) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_encoder_set_depth_state((hxn_handle *)self, (hxn_handle *)state, &err), err);
 }
 
 inline void render_encoder_set_scissor(void *self, int x, int y, int width, int height) {

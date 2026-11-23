@@ -42,6 +42,20 @@
   ],
   "records": [
     {
+      "name": "ColorTarget",
+      "docs": "Each color target of a render pipeline has a pixel format, and blends as the fields after\n`format` set, with the same codes as `Blend`.",
+      "fields": [
+        { "name": "format", "type": "PixelFormat" },
+        { "name": "enabled", "type": "bool" },
+        { "name": "color_operation", "type": "i32" },
+        { "name": "color_source", "type": "i32" },
+        { "name": "color_destination", "type": "i32" },
+        { "name": "alpha_operation", "type": "i32" },
+        { "name": "alpha_source", "type": "i32" },
+        { "name": "alpha_destination", "type": "i32" }
+      ]
+    },
+    {
       "name": "TextureDescriptor",
       "fields": [
         { "name": "width", "type": "i32" },
@@ -203,6 +217,24 @@
           "blocking": false
         },
         {
+          "name": "new_render_pipeline_with",
+          "docs": "Creates a render pipeline that draws into the color targets of `targets`, in the order of\nthe fragment function's outputs, and tests depth in a target of `depth` when\n`has_depth` is true. Its vertex buffers are laid out as `attributes` and `layouts`\ndescribe.",
+          "kind": "method",
+          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "targets", "type": "list<ColorTarget>" }, { "name": "has_depth", "type": "bool" }, { "name": "depth", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
+          "returns": "RenderPipeline",
+          "fallible": true,
+          "blocking": false
+        },
+        {
+          "name": "new_depth_state",
+          "docs": "Creates a depth test that passes when `compare` holds between a fragment's depth and the\ndepth in the target, with Metal's `MTLCompareFunction` values from 0 `Never` to 7\n`Always`, which hxn-gpu's drivers share. With `write`, a fragment that passes writes its\ndepth.",
+          "kind": "method",
+          "params": [{ "name": "compare", "type": "i32" }, { "name": "write", "type": "bool" }],
+          "returns": "DepthState",
+          "fallible": true,
+          "blocking": false
+        },
+        {
           "name": "new_texture",
           "kind": "method",
           "params": [{ "name": "descriptor", "type": "TextureDescriptor" }],
@@ -216,6 +248,43 @@
           "params": [{ "name": "descriptor", "type": "SamplerDescriptor" }],
           "returns": "Sampler",
           "fallible": true,
+          "blocking": false
+        }
+      ]
+    },
+    {
+      "name": "DepthState",
+      "docs": "`DepthState` is a depth test that a render encoder applies to what it draws next.",
+      "methods": []
+    },
+    {
+      "name": "RenderTargets",
+      "docs": "`RenderTargets` collects the attachments of a render pass: color attachments in order, and\nan optional depth attachment. `CommandBuffer.render_encoder_with` begins the pass.",
+      "methods": [
+        {
+          "name": "create",
+          "kind": "static",
+          "params": [],
+          "returns": "RenderTargets",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "color",
+          "docs": "Adds the next color attachment, `target`, which `load` starts from: the target as it\nis, cleared to `red`, `green`, `blue`, `alpha`, or undefined.",
+          "kind": "mutating",
+          "params": [{ "name": "target", "type": "Texture" }, { "name": "load", "type": "LoadAction" }, { "name": "red", "type": "f64" }, { "name": "green", "type": "f64" }, { "name": "blue", "type": "f64" }, { "name": "alpha", "type": "f64" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "depth",
+          "docs": "Sets the depth attachment, `target`, which `load` starts from: the target as it is,\ncleared to `clear`, or undefined.",
+          "kind": "mutating",
+          "params": [{ "name": "target", "type": "Texture" }, { "name": "load", "type": "LoadAction" }, { "name": "clear", "type": "f64" }],
+          "returns": "void",
+          "fallible": false,
           "blocking": false
         }
       ]
@@ -412,6 +481,15 @@
           "blocking": false
         },
         {
+          "name": "render_encoder_with",
+          "docs": "Begins a render pass into the attachments of `targets`.",
+          "kind": "mutating",
+          "params": [{ "name": "targets", "type": "RenderTargets", "borrow": "exclusive" }],
+          "returns": "RenderEncoder",
+          "fallible": true,
+          "blocking": false
+        },
+        {
           "name": "synchronize",
           "docs": "Makes a managed texture's GPU writes visible to `Texture.read` once this buffer completes.",
           "kind": "mutating",
@@ -597,6 +675,15 @@
           "name": "set_viewport",
           "kind": "mutating",
           "params": [{ "name": "x", "type": "f64" }, { "name": "y", "type": "f64" }, { "name": "width", "type": "f64" }, { "name": "height", "type": "f64" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
+          "name": "set_depth_state",
+          "docs": "Tests the depth of what is drawn next as `state` sets.",
+          "kind": "mutating",
+          "params": [{ "name": "state", "type": "DepthState" }],
           "returns": "void",
           "fallible": false,
           "blocking": false

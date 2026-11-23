@@ -21,9 +21,20 @@ hxn_status hxn_gpu_metal_device_new_compute_pipeline(hxn_handle *self, hxn_handl
 hxn_status hxn_gpu_metal_device_new_compute_pipeline_async(hxn_handle *self, hxn_handle *function, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_render_pipeline(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_slice blend, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_render_pipeline_async(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_slice blend, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_render_pipeline_with(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, hxn_slice targets, int32_t has_depth, int32_t depth, hxn_slice attributes, hxn_slice layouts, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_depth_state(hxn_handle *self, int32_t compare, int32_t write, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_texture(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_sampler(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_drop(hxn_handle *self, hxn_buf *err);
+
+/* DepthState */
+hxn_status hxn_gpu_metal_depth_state_drop(hxn_handle *self, hxn_buf *err);
+
+/* RenderTargets */
+hxn_status hxn_gpu_metal_render_targets_create(hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_render_targets_color(hxn_handle *self, hxn_handle *target, int32_t load, double red, double green, double blue, double alpha, hxn_buf *err);
+hxn_status hxn_gpu_metal_render_targets_depth(hxn_handle *self, hxn_handle *target, int32_t load, double clear, hxn_buf *err);
+hxn_status hxn_gpu_metal_render_targets_drop(hxn_handle *self, hxn_buf *err);
 
 /* Buffer */
 hxn_status hxn_gpu_metal_buffer_length(hxn_handle *self, int64_t *out, hxn_buf *err);
@@ -67,6 +78,7 @@ hxn_status hxn_gpu_metal_command_queue_drop(hxn_handle *self, hxn_buf *err);
 /* CommandBuffer */
 hxn_status hxn_gpu_metal_command_buffer_compute_encoder(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_render_encoder(hxn_handle *self, hxn_handle *target, int32_t load, double red, double green, double blue, double alpha, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_command_buffer_render_encoder_with(hxn_handle *self, hxn_handle *targets, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_synchronize(hxn_handle *self, hxn_handle *texture, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_completed(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_command_buffer_present(hxn_handle *self, hxn_handle *drawable, hxn_buf *err);
@@ -94,6 +106,7 @@ hxn_status hxn_gpu_metal_render_encoder_set_fragment_bytes(hxn_handle *self, hxn
 hxn_status hxn_gpu_metal_render_encoder_set_fragment_texture(hxn_handle *self, hxn_handle *texture, int32_t index, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_set_fragment_sampler(hxn_handle *self, hxn_handle *sampler, int32_t index, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_set_viewport(hxn_handle *self, double x, double y, double width, double height, hxn_buf *err);
+hxn_status hxn_gpu_metal_render_encoder_set_depth_state(hxn_handle *self, hxn_handle *state, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_set_scissor(hxn_handle *self, int32_t x, int32_t y, int32_t width, int32_t height, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_draw(hxn_handle *self, int32_t primitive, int32_t start, int32_t count, int32_t instances, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_end(hxn_handle *self, hxn_buf *err);

@@ -17,7 +17,8 @@ use objc2_foundation::{NSError, NSString};
 use objc2_metal::{
     MTLBlendFactor, MTLBlendOperation, MTLBlitCommandEncoder, MTLBuffer, MTLClearColor,
     MTLCommandBuffer, MTLCommandBufferStatus, MTLCommandEncoder, MTLCommandQueue,
-    MTLComputeCommandEncoder, MTLComputePipelineState, MTLCreateSystemDefaultDevice, MTLDevice,
+    MTLCompareFunction, MTLComputeCommandEncoder, MTLComputePipelineState,
+    MTLCreateSystemDefaultDevice, MTLDepthStencilDescriptor, MTLDepthStencilState, MTLDevice,
     MTLFunction, MTLLibrary, MTLLoadAction, MTLOrigin, MTLPixelFormat as RawPixelFormat,
     MTLPrimitiveType, MTLRegion, MTLRenderCommandEncoder, MTLRenderPassDescriptor,
     MTLRenderPipelineDescriptor, MTLRenderPipelineState, MTLResourceOptions, MTLSamplerAddressMode,
@@ -127,6 +128,35 @@ pub enum TextureUsage {
     ShaderRead = 1,
     ShaderWrite = 2,
     RenderTarget = 4,
+}
+
+/// Each color target of a render pipeline has a pixel format, and blends as the fields after
+/// `format` set, with the same codes as `Blend`.
+#[hxn::data]
+#[derive(Clone)]
+pub struct ColorTarget {
+    pub format: PixelFormat,
+    pub enabled: bool,
+    pub color_operation: i32,
+    pub color_source: i32,
+    pub color_destination: i32,
+    pub alpha_operation: i32,
+    pub alpha_source: i32,
+    pub alpha_destination: i32,
+}
+
+impl ColorTarget {
+    fn blend(&self) -> Blend {
+        Blend {
+            enabled: self.enabled,
+            color_operation: self.color_operation,
+            color_source: self.color_source,
+            color_destination: self.color_destination,
+            alpha_operation: self.alpha_operation,
+            alpha_source: self.alpha_source,
+            alpha_destination: self.alpha_destination,
+        }
+    }
 }
 
 #[hxn::data]
@@ -427,6 +457,60 @@ impl Device {
         Ok(future)
     }
 
+    /// Creates a render pipeline that draws into the color targets of `targets`, in the order of
+    /// the fragment function's outputs, and tests depth in a target of `depth` when
+    /// `has_depth` is true. Its vertex buffers are laid out as `attributes` and `layouts`
+    /// describe.
+    #[allow(clippy::too_many_arguments)]
+    pub fn new_render_pipeline_with(
+        &self,
+        vertex: &Function,
+        fragment: &Function,
+        targets: Vec<ColorTarget>,
+        has_depth: bool,
+        depth: PixelFormat,
+        attributes: Vec<VertexAttribute>,
+        layouts: Vec<VertexLayout>,
+    ) -> Result<RenderPipeline, String> {
+        let descriptor = render_descriptor_with(
+            vertex,
+            fragment,
+            &targets,
+            has_depth.then_some(depth),
+            &attributes,
+            &layouts,
+        )?;
+        let pipeline = self
+            .device
+            .0
+            .newRenderPipelineStateWithDescriptor_error(&descriptor)
+            .map_err(message)?;
+        Ok(RenderPipeline {
+            pipeline: Shared(pipeline),
+        })
+    }
+
+    /// Creates a depth test that passes when `compare` holds between a fragment's depth and the
+    /// depth in the target, with Metal's `MTLCompareFunction` values from 0 `Never` to 7
+    /// `Always`, which hxn-gpu's drivers share. With `write`, a fragment that passes writes its
+    /// depth.
+    pub fn new_depth_state(&self, compare: i32, write: bool) -> Result<DepthState, String> {
+        if !(0..=7).contains(&compare) {
+            return Err(format!("a compare function is 0 to 7, not {compare}"));
+        }
+        let descriptor = MTLDepthStencilDescriptor::new();
+        descriptor.setDepthCompareFunction(MTLCompareFunction(compare as usize));
+        descriptor.setDepthWriteEnabled(write);
+        let state = self
+            .device
+            .0
+            .newDepthStencilStateWithDescriptor(&descriptor)
+            .ok_or("Metal made no depth state")?;
+        Ok(DepthState {
+            state: Shared(state),
+        })
+    }
+
     pub fn new_texture(&self, descriptor: TextureDescriptor) -> Result<Texture, String> {
         let width = usize_of(descriptor.width as i64, "a texture's width")?;
         let height = usize_of(descriptor.height as i64, "a texture's height")?;
@@ -482,11 +566,51 @@ fn render_descriptor(
     layouts: &[VertexLayout],
     blend: &Blend,
 ) -> Result<Retained<MTLRenderPipelineDescriptor>, String> {
+    let target = ColorTarget {
+        format,
+        enabled: blend.enabled,
+        color_operation: blend.color_operation,
+        color_source: blend.color_source,
+        color_destination: blend.color_destination,
+        alpha_operation: blend.alpha_operation,
+        alpha_source: blend.alpha_source,
+        alpha_destination: blend.alpha_destination,
+    };
+    render_descriptor_with(vertex, fragment, &[target], None, attributes, layouts)
+}
+
+fn render_descriptor_with(
+    vertex: &Function,
+    fragment: &Function,
+    targets: &[ColorTarget],
+    depth: Option<PixelFormat>,
+    attributes: &[VertexAttribute],
+    layouts: &[VertexLayout],
+) -> Result<Retained<MTLRenderPipelineDescriptor>, String> {
     let descriptor = MTLRenderPipelineDescriptor::new();
     descriptor.setVertexFunction(Some(&vertex.function.0));
     descriptor.setFragmentFunction(Some(&fragment.function.0));
-    let color = unsafe { descriptor.colorAttachments().objectAtIndexedSubscript(0) };
-    color.setPixelFormat(format.raw());
+    for (index, target) in targets.iter().enumerate() {
+        let color = unsafe {
+            descriptor
+                .colorAttachments()
+                .objectAtIndexedSubscript(index)
+        };
+        color.setPixelFormat(target.format.raw());
+        set_blend(&color, &target.blend())?;
+    }
+    if let Some(format) = depth {
+        descriptor.setDepthAttachmentPixelFormat(format.raw());
+    }
+    vertex_descriptor(&descriptor, attributes, layouts)?;
+    Ok(descriptor)
+}
+
+// Sets how the pipeline blends into one color attachment.
+fn set_blend(
+    color: &objc2_metal::MTLRenderPipelineColorAttachmentDescriptor,
+    blend: &Blend,
+) -> Result<(), String> {
     if blend.enabled {
         let factor = |code: i32, what: &str| -> Result<MTLBlendFactor, String> {
             if (0..=10).contains(&code) {
@@ -516,6 +640,15 @@ fn render_descriptor(
             "the alpha destination",
         )?);
     }
+    Ok(())
+}
+
+// Lays out the pipeline's vertex buffers as `attributes` and `layouts` describe.
+fn vertex_descriptor(
+    descriptor: &MTLRenderPipelineDescriptor,
+    attributes: &[VertexAttribute],
+    layouts: &[VertexLayout],
+) -> Result<(), String> {
     if !attributes.is_empty() {
         let vertices = MTLVertexDescriptor::new();
         for a in attributes {
@@ -543,7 +676,74 @@ fn render_descriptor(
         }
         descriptor.setVertexDescriptor(Some(&vertices));
     }
-    Ok(descriptor)
+    Ok(())
+}
+
+/// `DepthState` is a depth test that a render encoder applies to what it draws next.
+#[hxn::interface]
+pub struct DepthState {
+    state: Shared<ProtocolObject<dyn MTLDepthStencilState>>,
+}
+
+#[hxn::methods]
+impl DepthState {}
+
+/// `RenderTargets` collects the attachments of a render pass: color attachments in order, and
+/// an optional depth attachment. `CommandBuffer.render_encoder_with` begins the pass.
+#[hxn::interface]
+pub struct RenderTargets {
+    pass: Owned<MTLRenderPassDescriptor>,
+    colors: usize,
+}
+
+#[hxn::methods]
+impl RenderTargets {
+    pub fn create() -> RenderTargets {
+        RenderTargets {
+            pass: Owned(MTLRenderPassDescriptor::new()),
+            colors: 0,
+        }
+    }
+
+    /// Adds the next color attachment, `target`, which `load` starts from: the target as it
+    /// is, cleared to `red`, `green`, `blue`, `alpha`, or undefined.
+    #[allow(clippy::too_many_arguments)]
+    pub fn color(
+        &mut self,
+        target: &Texture,
+        load: LoadAction,
+        red: f64,
+        green: f64,
+        blue: f64,
+        alpha: f64,
+    ) {
+        let color = unsafe {
+            self.pass
+                .0
+                .colorAttachments()
+                .objectAtIndexedSubscript(self.colors)
+        };
+        color.setTexture(Some(&target.texture.0));
+        color.setLoadAction(MTLLoadAction(load as usize));
+        color.setStoreAction(MTLStoreAction::Store);
+        color.setClearColor(MTLClearColor {
+            red,
+            green,
+            blue,
+            alpha,
+        });
+        self.colors += 1;
+    }
+
+    /// Sets the depth attachment, `target`, which `load` starts from: the target as it is,
+    /// cleared to `clear`, or undefined.
+    pub fn depth(&mut self, target: &Texture, load: LoadAction, clear: f64) {
+        let depth = self.pass.0.depthAttachment();
+        depth.setTexture(Some(&target.texture.0));
+        depth.setLoadAction(MTLLoadAction(load as usize));
+        depth.setStoreAction(MTLStoreAction::Store);
+        depth.setClearDepth(clear);
+    }
 }
 
 /// GPU memory the CPU can read and write.
@@ -866,6 +1066,21 @@ impl CommandBuffer {
         })
     }
 
+    /// Begins a render pass into the attachments of `targets`.
+    pub fn render_encoder_with(
+        &mut self,
+        targets: &mut RenderTargets,
+    ) -> Result<RenderEncoder, String> {
+        let encoder = self
+            .buffer
+            .0
+            .renderCommandEncoderWithDescriptor(&targets.pass.0)
+            .ok_or("Metal could not make a render encoder")?;
+        Ok(RenderEncoder {
+            encoder: Owned(encoder),
+        })
+    }
+
     /// Makes a managed texture's GPU writes visible to `Texture.read` once this buffer completes.
     pub fn synchronize(&mut self, texture: &Texture) -> Result<(), String> {
         let blit = self
@@ -1147,6 +1362,11 @@ impl RenderEncoder {
             znear: 0.0,
             zfar: 1.0,
         });
+    }
+
+    /// Tests the depth of what is drawn next as `state` sets.
+    pub fn set_depth_state(&mut self, state: &DepthState) {
+        self.encoder.0.setDepthStencilState(Some(&state.state.0));
     }
 
     /// Draws only inside the `width` by `height` pixels at `x`, `y` of the target.

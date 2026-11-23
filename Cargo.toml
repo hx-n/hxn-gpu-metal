@@ -1,6 +1,6 @@
 [package]
 name = "hxn-gpu-metal"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
 repository = "https://github.com/hx-n/hxn-gpu-metal"
@@ -15,7 +15,7 @@ name = "hxn_gpu_metal"
 library = "gpu_metal"
 haxelib = "hxn-gpu-metal"
 contributors = ["darmie", "rayzor"]
-releasenote = "Blend what a pipeline draws, write part of a texture and set a scissor."
+releasenote = "Draw into several color targets in one pass, and test and write depth."
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]
@@ -35,7 +35,7 @@ objc2-metal = { version = "0.3", default-features = false, features = [
     "MTLPixelFormat", "MTLLibrary", "MTLCommandQueue", "MTLCommandBuffer", "MTLCommandEncoder",
     "MTLComputeCommandEncoder", "MTLRenderCommandEncoder", "MTLBlitCommandEncoder", "MTLComputePipeline",
     "MTLRenderPipeline", "MTLRenderPass", "MTLSampler", "MTLVertexDescriptor", "MTLDrawable",
-    "MTLArgument", "MTLStageInputOutputDescriptor", "MTLPipeline",
+    "MTLArgument", "MTLStageInputOutputDescriptor", "MTLPipeline", "MTLDepthStencil",
 ] }
 objc2-quartz-core = { version = "0.3", default-features = false, features = ["std", "CALayer", "CAMetalLayer", "objc2-metal", "objc2-core-foundation"] }
 objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFCGTypes"] }

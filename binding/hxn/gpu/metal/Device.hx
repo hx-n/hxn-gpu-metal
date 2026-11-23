@@ -118,6 +118,55 @@ class Device {
 		return HxnGpuMetalFuture.ofRenderPipeline(HxnGpuMetalNative.device_new_render_pipeline_async(hxnRaw, vertex == null ? null : vertex.hxnRaw, fragment == null ? null : fragment.hxnRaw, format, attributesBytes, layoutsBytes, blendBytes));
 	}
 
+	/**
+		Creates a render pipeline that draws into the color targets of `targets`, in the order of
+		the fragment function's outputs, and tests depth in a target of `depth` when
+		`has_depth` is true. Its vertex buffers are laid out as `attributes` and `layouts`
+		describe.
+	**/
+	public function newRenderPipelineWith(vertex:Function, fragment:Function, targets:Array<ColorTarget>, hasDepth:Bool, depth:PixelFormat, attributes:Array<VertexAttribute>, layouts:Array<VertexLayout>):RenderPipeline {
+		var targetsOut = new haxe.io.BytesBuffer();
+		if (targets == null)
+			throw new haxe.Exception("null where a list is needed");
+		targetsOut.addInt32(targets.length);
+		for (item0 in targets) {
+			if (item0 == null)
+				throw new haxe.Exception("null where a ColorTarget is needed");
+			item0.hxnWrite(targetsOut);
+		}
+		var targetsBytes = targetsOut.getBytes();
+		var attributesOut = new haxe.io.BytesBuffer();
+		if (attributes == null)
+			throw new haxe.Exception("null where a list is needed");
+		attributesOut.addInt32(attributes.length);
+		for (item0 in attributes) {
+			if (item0 == null)
+				throw new haxe.Exception("null where a VertexAttribute is needed");
+			item0.hxnWrite(attributesOut);
+		}
+		var attributesBytes = attributesOut.getBytes();
+		var layoutsOut = new haxe.io.BytesBuffer();
+		if (layouts == null)
+			throw new haxe.Exception("null where a list is needed");
+		layoutsOut.addInt32(layouts.length);
+		for (item0 in layouts) {
+			if (item0 == null)
+				throw new haxe.Exception("null where a VertexLayout is needed");
+			item0.hxnWrite(layoutsOut);
+		}
+		var layoutsBytes = layoutsOut.getBytes();
+		return RenderPipeline.hxnAdopt(HxnGpuMetalNative.device_new_render_pipeline_with(hxnRaw, vertex == null ? null : vertex.hxnRaw, fragment == null ? null : fragment.hxnRaw, targetsBytes, hasDepth, depth, attributesBytes, layoutsBytes));
+	}
+
+	/**
+		Creates a depth test that passes when `compare` holds between a fragment's depth and the
+		depth in the target, with Metal's `MTLCompareFunction` values from 0 `Never` to 7
+		`Always`, which hxn-gpu's drivers share. With `write`, a fragment that passes writes its
+		depth.
+	**/
+	public function newDepthState(compare:Int, write:Bool):DepthState
+		return DepthState.hxnAdopt(HxnGpuMetalNative.device_new_depth_state(hxnRaw, compare, write));
+
 	public function newTexture(descriptor:TextureDescriptor):Texture {
 		var descriptorOut = new haxe.io.BytesBuffer();
 		if (descriptor == null)

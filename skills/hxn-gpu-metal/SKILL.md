@@ -63,6 +63,12 @@ then `commands.renderEncoder(target, LoadAction.Clear, r, g, b, a)`,
 `texture.writeRegion(x, y, w, h, bytes, bytesPerRow)` writes part of one.
 `LoadAction.Load` keeps what the target holds. `setViewport(x, y, w, h)` and
 `setScissor(x, y, w, h)` take pixels from the target's top-left corner.
+Several targets and depth: `device.newRenderPipelineWith(vertex, fragment, targets,
+hasDepth, depthFormat, attributes, layouts)` takes `ColorTarget` records (a format and the
+`Blend` fields), `device.newDepthState(compare, write)` makes a depth test (codes 0 `Never`
+to 7 `Always`) that `encoder.setDepthState` applies, and `RenderTargets.create()` with
+`color(texture, load, r, g, b, a)` and `depth(texture, load, clear)` feeds
+`commands.renderEncoderWith(targets)`. Depth textures use private storage.
 
 ## Rules
 

@@ -40,6 +40,10 @@ class RenderEncoder {
 	public function setViewport(x:Float, y:Float, width:Float, height:Float):Void
 		HxnGpuMetalNative.render_encoder_set_viewport(hxnRaw, x, y, width, height);
 
+	/** Tests the depth of what is drawn next as `state` sets. **/
+	public function setDepthState(state:DepthState):Void
+		HxnGpuMetalNative.render_encoder_set_depth_state(hxnRaw, state == null ? null : state.hxnRaw);
+
 	/** Draws only inside the `width` by `height` pixels at `x`, `y` of the target. **/
 	public function setScissor(x:Int, y:Int, width:Int, height:Int):Void
 		HxnGpuMetalNative.render_encoder_set_scissor(hxnRaw, x, y, width, height);

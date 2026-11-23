@@ -24,6 +24,10 @@ class CommandBuffer {
 	public function renderEncoder(target:Texture, load:LoadAction, red:Float, green:Float, blue:Float, alpha:Float):RenderEncoder
 		return RenderEncoder.hxnAdopt(HxnGpuMetalNative.command_buffer_render_encoder(hxnRaw, target == null ? null : target.hxnRaw, load, red, green, blue, alpha));
 
+	/** Begins a render pass into the attachments of `targets`. **/
+	public function renderEncoderWith(targets:RenderTargets):RenderEncoder
+		return RenderEncoder.hxnAdopt(HxnGpuMetalNative.command_buffer_render_encoder_with(hxnRaw, targets == null ? null : targets.hxnRaw));
+
 	/** Makes a managed texture's GPU writes visible to `Texture.read` once this buffer completes. **/
 	public function synchronize(texture:Texture):Void
 		HxnGpuMetalNative.command_buffer_synchronize(hxnRaw, texture == null ? null : texture.hxnRaw);
