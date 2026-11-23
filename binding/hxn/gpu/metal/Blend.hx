@@ -2,10 +2,10 @@
 package hxn.gpu.metal;
 
 /**
-	How a pipeline blends what it draws into its color target. The factors are Metal's
-	`MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`, and the operations its
-	`MTLBlendOperation` values, from 0 `Add` to 4 `Max`, which hxn-gpu's drivers share. With
-	`enabled` false, the pipeline writes its color as it is.
+	`Blend` sets how a pipeline blends what it draws into its color target. The factors are
+	Metal's `MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`. The operations
+	are its `MTLBlendOperation` values, from 0 `Add` to 4 `Max`. hxn-gpu's drivers share these
+	codes. When `enabled` is false, the pipeline writes its color as it is.
 **/
 @:structInit class Blend {
 	public var enabled:Bool;

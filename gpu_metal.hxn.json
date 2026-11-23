@@ -80,7 +80,7 @@
     },
     {
       "name": "Blend",
-      "docs": "How a pipeline blends what it draws into its color target. The factors are Metal's\n`MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`, and the operations its\n`MTLBlendOperation` values, from 0 `Add` to 4 `Max`, which hxn-gpu's drivers share. With\n`enabled` false, the pipeline writes its color as it is.",
+      "docs": "`Blend` sets how a pipeline blends what it draws into its color target. The factors are\nMetal's `MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`. The operations\nare its `MTLBlendOperation` values, from 0 `Add` to 4 `Max`. hxn-gpu's drivers share these\ncodes. When `enabled` is false, the pipeline writes its color as it is.",
       "fields": [
         { "name": "enabled", "type": "bool" },
         { "name": "color_operation", "type": "i32" },
@@ -186,7 +186,7 @@
         },
         {
           "name": "new_render_pipeline",
-          "docs": "A render pipeline drawing to one color target of `format`, with vertex buffers laid out\nas `attributes` and `layouts` describe (both empty when the vertex stage reads none),\nblending as `blend` describes.",
+          "docs": "Creates a render pipeline that draws into one color target of `format`. Its vertex\nbuffers are laid out as `attributes` and `layouts` describe, and both are empty when the\nvertex stage reads none. It blends as `blend` describes.",
           "kind": "method",
           "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }, { "name": "blend", "type": "Blend" }],
           "returns": "RenderPipeline",

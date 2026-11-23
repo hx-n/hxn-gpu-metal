@@ -191,10 +191,10 @@ pub struct VertexLayout {
     pub per_instance: bool,
 }
 
-/// How a pipeline blends what it draws into its color target. The factors are Metal's
-/// `MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`, and the operations its
-/// `MTLBlendOperation` values, from 0 `Add` to 4 `Max`, which hxn-gpu's drivers share. With
-/// `enabled` false, the pipeline writes its color as it is.
+/// `Blend` sets how a pipeline blends what it draws into its color target. The factors are
+/// Metal's `MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`. The operations
+/// are its `MTLBlendOperation` values, from 0 `Add` to 4 `Max`. hxn-gpu's drivers share these
+/// codes. When `enabled` is false, the pipeline writes its color as it is.
 #[hxn::data]
 pub struct Blend {
     pub enabled: bool,
@@ -366,9 +366,9 @@ impl Device {
         future
     }
 
-    /// A render pipeline drawing to one color target of `format`, with vertex buffers laid out
-    /// as `attributes` and `layouts` describe (both empty when the vertex stage reads none),
-    /// blending as `blend` describes.
+    /// Creates a render pipeline that draws into one color target of `format`. Its vertex
+    /// buffers are laid out as `attributes` and `layouts` describe, and both are empty when the
+    /// vertex stage reads none. It blends as `blend` describes.
     pub fn new_render_pipeline(
         &self,
         vertex: &Function,

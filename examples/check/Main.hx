@@ -89,7 +89,7 @@ class Main {
 		});
 	}
 
-	// Blending is off: the quad's color replaces the target's.
+	// Blending is off, so the quad's color replaces the target's.
 	static final REPLACE:Blend = {
 		enabled: false,
 		colorOperation: 0,
@@ -100,8 +100,8 @@ class Main {
 		alphaDestination: 0
 	};
 
-	// Straight alpha: color = source * source alpha + destination * (1 - source alpha),
-	// and alpha = source + destination * (1 - source alpha). Metal's factors 4
+	// Straight alpha blends with color = source * source alpha + destination * (1 - source
+	// alpha) and alpha = source + destination * (1 - source alpha). It uses Metal's factors 4
 	// (SourceAlpha), 5 (OneMinusSourceAlpha) and 1 (One), and its operation 0 (Add).
 	static final ALPHA:Blend = {
 		enabled: true,
@@ -124,7 +124,8 @@ class Main {
 		blended(device, queue);
 	}
 
-	// A half-transparent red quad over a blue target: half red, half blue, opaque.
+	// The check draws a half-transparent red quad over a blue target. The result is half
+	// red, half blue and opaque.
 	static function blended(device:Device, queue:CommandQueue) {
 		var pixels = quad(device, queue, [1.0, 0.0, 0.0, 0.5], [0.0, 0.0, 1.0, 1.0], ALPHA);
 		var expected = [128, 0, 128, 255];

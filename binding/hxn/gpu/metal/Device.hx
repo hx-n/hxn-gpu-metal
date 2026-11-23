@@ -52,9 +52,9 @@ class Device {
 		return HxnGpuMetalFuture.ofComputePipeline(HxnGpuMetalNative.device_new_compute_pipeline_async(hxnRaw, function_ == null ? null : function_.hxnRaw));
 
 	/**
-		A render pipeline drawing to one color target of `format`, with vertex buffers laid out
-		as `attributes` and `layouts` describe (both empty when the vertex stage reads none),
-		blending as `blend` describes.
+		Creates a render pipeline that draws into one color target of `format`. Its vertex
+		buffers are laid out as `attributes` and `layouts` describe, and both are empty when the
+		vertex stage reads none. It blends as `blend` describes.
 	**/
 	public function newRenderPipeline(vertex:Function, fragment:Function, format:PixelFormat, attributes:Array<VertexAttribute>, layouts:Array<VertexLayout>, blend:Blend):RenderPipeline {
 		var attributesOut = new haxe.io.BytesBuffer();
