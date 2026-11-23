@@ -77,6 +77,19 @@
         { "name": "stride", "type": "i32" },
         { "name": "per_instance", "type": "bool" }
       ]
+    },
+    {
+      "name": "Blend",
+      "docs": "How a pipeline blends what it draws into its color target. The factors are Metal's\n`MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`, and the operations its\n`MTLBlendOperation` values, from 0 `Add` to 4 `Max`, which hxn-gpu's drivers share. With\n`enabled` false, the pipeline writes its color as it is.",
+      "fields": [
+        { "name": "enabled", "type": "bool" },
+        { "name": "color_operation", "type": "i32" },
+        { "name": "color_source", "type": "i32" },
+        { "name": "color_destination", "type": "i32" },
+        { "name": "alpha_operation", "type": "i32" },
+        { "name": "alpha_source", "type": "i32" },
+        { "name": "alpha_destination", "type": "i32" }
+      ]
     }
   ],
   "interfaces": [
@@ -173,9 +186,9 @@
         },
         {
           "name": "new_render_pipeline",
-          "docs": "A render pipeline drawing to one color target of `format`, with vertex buffers laid out\nas `attributes` and `layouts` describe (both empty when the vertex stage reads none).",
+          "docs": "A render pipeline drawing to one color target of `format`, with vertex buffers laid out\nas `attributes` and `layouts` describe (both empty when the vertex stage reads none),\nblending as `blend` describes.",
           "kind": "method",
-          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
+          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }, { "name": "blend", "type": "Blend" }],
           "returns": "RenderPipeline",
           "fallible": true,
           "blocking": false
@@ -184,7 +197,7 @@
           "name": "new_render_pipeline_async",
           "docs": "`new_render_pipeline`, compiled on Metal's threads; the future settles when it is. Fails\nat once for a vertex layout Metal cannot take.",
           "kind": "method",
-          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }],
+          "params": [{ "name": "vertex", "type": "Function" }, { "name": "fragment", "type": "Function" }, { "name": "format", "type": "PixelFormat" }, { "name": "attributes", "type": "list<VertexAttribute>" }, { "name": "layouts", "type": "list<VertexLayout>" }, { "name": "blend", "type": "Blend" }],
           "returns": "future<RenderPipeline>",
           "fallible": true,
           "blocking": false

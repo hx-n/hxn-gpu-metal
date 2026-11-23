@@ -15,14 +15,15 @@ use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
 use objc2_foundation::{NSError, NSString};
 use objc2_metal::{
-    MTLBlitCommandEncoder, MTLBuffer, MTLClearColor, MTLCommandBuffer, MTLCommandBufferStatus,
-    MTLCommandEncoder, MTLCommandQueue, MTLComputeCommandEncoder, MTLComputePipelineState,
-    MTLCreateSystemDefaultDevice, MTLDevice, MTLFunction, MTLLibrary, MTLLoadAction, MTLOrigin,
-    MTLPixelFormat as RawPixelFormat, MTLPrimitiveType, MTLRegion, MTLRenderCommandEncoder,
-    MTLRenderPassDescriptor, MTLRenderPipelineDescriptor, MTLRenderPipelineState,
-    MTLResourceOptions, MTLSamplerAddressMode, MTLSamplerDescriptor, MTLSamplerMinMagFilter,
-    MTLSamplerState, MTLSize, MTLStorageMode, MTLStoreAction, MTLTexture, MTLTextureDescriptor,
-    MTLTextureUsage, MTLVertexDescriptor, MTLVertexFormat, MTLVertexStepFunction, MTLViewport,
+    MTLBlendFactor, MTLBlendOperation, MTLBlitCommandEncoder, MTLBuffer, MTLClearColor,
+    MTLCommandBuffer, MTLCommandBufferStatus, MTLCommandEncoder, MTLCommandQueue,
+    MTLComputeCommandEncoder, MTLComputePipelineState, MTLCreateSystemDefaultDevice, MTLDevice,
+    MTLFunction, MTLLibrary, MTLLoadAction, MTLOrigin, MTLPixelFormat as RawPixelFormat,
+    MTLPrimitiveType, MTLRegion, MTLRenderCommandEncoder, MTLRenderPassDescriptor,
+    MTLRenderPipelineDescriptor, MTLRenderPipelineState, MTLResourceOptions, MTLSamplerAddressMode,
+    MTLSamplerDescriptor, MTLSamplerMinMagFilter, MTLSamplerState, MTLSize, MTLStorageMode,
+    MTLStoreAction, MTLTexture, MTLTextureDescriptor, MTLTextureUsage, MTLVertexDescriptor,
+    MTLVertexFormat, MTLVertexStepFunction, MTLViewport,
 };
 use objc2_quartz_core::{CAMetalDrawable, CAMetalLayer};
 
@@ -176,6 +177,21 @@ pub struct VertexLayout {
     pub buffer: i32,
     pub stride: i32,
     pub per_instance: bool,
+}
+
+/// How a pipeline blends what it draws into its color target. The factors are Metal's
+/// `MTLBlendFactor` values, from 0 `Zero` to 10 `SourceAlphaSaturated`, and the operations its
+/// `MTLBlendOperation` values, from 0 `Add` to 4 `Max`, which hxn-gpu's drivers share. With
+/// `enabled` false, the pipeline writes its color as it is.
+#[hxn::data]
+pub struct Blend {
+    pub enabled: bool,
+    pub color_operation: i32,
+    pub color_source: i32,
+    pub color_destination: i32,
+    pub alpha_operation: i32,
+    pub alpha_source: i32,
+    pub alpha_destination: i32,
 }
 
 #[hxn::data]
@@ -339,7 +355,8 @@ impl Device {
     }
 
     /// A render pipeline drawing to one color target of `format`, with vertex buffers laid out
-    /// as `attributes` and `layouts` describe (both empty when the vertex stage reads none).
+    /// as `attributes` and `layouts` describe (both empty when the vertex stage reads none),
+    /// blending as `blend` describes.
     pub fn new_render_pipeline(
         &self,
         vertex: &Function,
@@ -347,8 +364,10 @@ impl Device {
         format: PixelFormat,
         attributes: Vec<VertexAttribute>,
         layouts: Vec<VertexLayout>,
+        blend: Blend,
     ) -> Result<RenderPipeline, String> {
-        let descriptor = render_descriptor(vertex, fragment, format, &attributes, &layouts)?;
+        let descriptor =
+            render_descriptor(vertex, fragment, format, &attributes, &layouts, &blend)?;
         let pipeline = self
             .device
             .0
@@ -368,8 +387,10 @@ impl Device {
         format: PixelFormat,
         attributes: Vec<VertexAttribute>,
         layouts: Vec<VertexLayout>,
+        blend: Blend,
     ) -> Result<Future<RenderPipeline>, String> {
-        let descriptor = render_descriptor(vertex, fragment, format, &attributes, &layouts)?;
+        let descriptor =
+            render_descriptor(vertex, fragment, format, &attributes, &layouts, &blend)?;
         let (completer, future) = hxn_future::pending::<RenderPipeline>();
         let handler: Made<dyn MTLRenderPipelineState> = RcBlock::new(
             move |pipeline, error| match unsafe { Retained::retain(pipeline) } {
@@ -447,12 +468,42 @@ fn render_descriptor(
     format: PixelFormat,
     attributes: &[VertexAttribute],
     layouts: &[VertexLayout],
+    blend: &Blend,
 ) -> Result<Retained<MTLRenderPipelineDescriptor>, String> {
     let descriptor = MTLRenderPipelineDescriptor::new();
     descriptor.setVertexFunction(Some(&vertex.function.0));
     descriptor.setFragmentFunction(Some(&fragment.function.0));
-    unsafe { descriptor.colorAttachments().objectAtIndexedSubscript(0) }
-        .setPixelFormat(format.raw());
+    let color = unsafe { descriptor.colorAttachments().objectAtIndexedSubscript(0) };
+    color.setPixelFormat(format.raw());
+    if blend.enabled {
+        let factor = |code: i32, what: &str| -> Result<MTLBlendFactor, String> {
+            if (0..=10).contains(&code) {
+                Ok(MTLBlendFactor(code as usize))
+            } else {
+                Err(format!("{what} is {code}, and a blend factor is 0 to 10"))
+            }
+        };
+        let operation = |code: i32, what: &str| -> Result<MTLBlendOperation, String> {
+            if (0..=4).contains(&code) {
+                Ok(MTLBlendOperation(code as usize))
+            } else {
+                Err(format!("{what} is {code}, and a blend operation is 0 to 4"))
+            }
+        };
+        color.setBlendingEnabled(true);
+        color.setRgbBlendOperation(operation(blend.color_operation, "the color operation")?);
+        color.setSourceRGBBlendFactor(factor(blend.color_source, "the color source")?);
+        color.setDestinationRGBBlendFactor(factor(
+            blend.color_destination,
+            "the color destination",
+        )?);
+        color.setAlphaBlendOperation(operation(blend.alpha_operation, "the alpha operation")?);
+        color.setSourceAlphaBlendFactor(factor(blend.alpha_source, "the alpha source")?);
+        color.setDestinationAlphaBlendFactor(factor(
+            blend.alpha_destination,
+            "the alpha destination",
+        )?);
+    }
     if !attributes.is_empty() {
         let vertices = MTLVertexDescriptor::new();
         for a in attributes {

@@ -4,8 +4,9 @@ import hxnsl.Layout.MslEntry;
 import Shaders;
 
 /**
-	What CI runs: a compute shader over a buffer, and a render pass into a
-	texture, each read back and checked. It needs a Metal device, and prints
+	What CI runs: a compute shader over a buffer, and render passes into a
+	texture, without blending and with alpha blending, each read back and
+	checked. It needs a Metal device, and prints
 	the same lines on every runtime.
 **/
 class Main {
@@ -88,7 +89,54 @@ class Main {
 		});
 	}
 
+	// Blending is off: the quad's color replaces the target's.
+	static final REPLACE:Blend = {
+		enabled: false,
+		colorOperation: 0,
+		colorSource: 1,
+		colorDestination: 0,
+		alphaOperation: 0,
+		alphaSource: 1,
+		alphaDestination: 0
+	};
+
+	// Straight alpha: color = source * source alpha + destination * (1 - source alpha),
+	// and alpha = source + destination * (1 - source alpha). Metal's factors 4
+	// (SourceAlpha), 5 (OneMinusSourceAlpha) and 1 (One), and its operation 0 (Add).
+	static final ALPHA:Blend = {
+		enabled: true,
+		colorOperation: 0,
+		colorSource: 4,
+		colorDestination: 5,
+		alphaOperation: 0,
+		alphaSource: 1,
+		alphaDestination: 5
+	};
+
 	static function render(device:Device, queue:CommandQueue) {
+		var tint = [0.25, 0.5, 0.75, 1.0];
+		var pixels = quad(device, queue, tint, [0.0, 0.0, 0.0, 0.0], REPLACE);
+		var expected = [for (c in tint) Math.round(c * 255)];
+		for (p in 0...16)
+			for (c in 0...4)
+				check(pixels.get(p * 4 + c) == expected[c], 'pixel $p channel $c is ${pixels.get(p * 4 + c)}, not ${expected[c]}');
+		Sys.println('render: 4x4 pixels of ${[for (c in 0...4) pixels.get(c)].join(", ")}');
+		blended(device, queue);
+	}
+
+	// A half-transparent red quad over a blue target: half red, half blue, opaque.
+	static function blended(device:Device, queue:CommandQueue) {
+		var pixels = quad(device, queue, [1.0, 0.0, 0.0, 0.5], [0.0, 0.0, 1.0, 1.0], ALPHA);
+		var expected = [128, 0, 128, 255];
+		for (p in 0...16)
+			for (c in 0...4)
+				check(Math.abs(pixels.get(p * 4 + c) - expected[c]) <= 1, 'blended pixel $p channel $c is ${pixels.get(p * 4 + c)}, not about ${expected[c]}');
+		Sys.println('blend: 4x4 pixels of about ${expected.join(", ")}');
+	}
+
+	// Draws a quad of `tint` into a 4x4 target cleared to `clear`, with `blend`, and
+	// returns the target's pixels.
+	static function quad(device:Device, queue:CommandQueue, tint:Array<Float>, clear:Array<Float>, blend:Blend):Bytes {
 		// The metallib the build made, or the MSL compiled now where it had no Metal compiler.
 		var library = hxn.gpu.metal.Shaders.library(device, Tinted.metallib(), Tinted.MSL);
 		var vertex = library.functionNamed("vertex_main");
@@ -97,7 +145,7 @@ class Main {
 		var vertices = 30;
 		var pipeline = device.newRenderPipelineAsync(vertex, fragment, PixelFormat.Rgba8Unorm,
 			[{location: Tinted.INPUT_position, format: VertexFormat.Float2, offset: 0, buffer: vertices}],
-			[{buffer: vertices, stride: 8, perInstance: false}]).await();
+			[{buffer: vertices, stride: 8, perInstance: false}], blend).await();
 		var size = 4;
 		var target = device.newTexture({
 			width: size,
@@ -113,12 +161,11 @@ class Main {
 			quad.setFloat(i * 4, corners[i]);
 		var positions = device.newBufferWith(quad);
 		var params = Bytes.alloc(Tinted.PARAMS_SIZE);
-		var tint = [0.25, 0.5, 0.75, 1.0];
 		for (i in 0...4)
 			params.setFloat(Tinted.PARAMS_tint + i * 4, tint[i]);
 
 		var commands = queue.commandBuffer();
-		var encoder = commands.renderEncoder(target, LoadAction.Clear, 0, 0, 0, 0);
+		var encoder = commands.renderEncoder(target, LoadAction.Clear, clear[0], clear[1], clear[2], clear[3]);
 		encoder.setPipeline(pipeline);
 		encoder.setVertexBuffer(positions, 0, vertices);
 		encoder.setFragmentBytes(params, slot(Tinted.MSL_SLOTS, "fragment_main", Tinted.PARAMS_GROUP, Tinted.PARAMS_BINDING));
@@ -128,11 +175,7 @@ class Main {
 		commands.waitUntilCompleted();
 
 		var pixels = target.read(size * 4);
-		var expected = [for (c in tint) Math.round(c * 255)];
-		for (p in 0...size * size)
-			for (c in 0...4)
-				check(pixels.get(p * 4 + c) == expected[c], 'pixel $p channel $c is ${pixels.get(p * 4 + c)}, not ${expected[c]}');
-		Sys.println('render: ${size}x$size pixels of ${[for (c in 0...4) pixels.get(c)].join(", ")}');
 		closeAll([encoder, commands, positions, target, pipeline, fragment, vertex, library]);
+		return pixels;
 	}
 }

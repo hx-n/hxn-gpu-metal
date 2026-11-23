@@ -1,6 +1,6 @@
 [package]
 name = "hxn-gpu-metal"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
 repository = "https://github.com/hx-n/hxn-gpu-metal"
@@ -15,7 +15,7 @@ name = "hxn_gpu_metal"
 library = "gpu_metal"
 haxelib = "hxn-gpu-metal"
 contributors = ["darmie", "rayzor"]
-releasenote = "Use hxn 0.3.9 shared logging with application-owned filtering and sinks; retain pinned dependency redistribution notices."
+releasenote = "Blend what a render pipeline draws into its target."
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]

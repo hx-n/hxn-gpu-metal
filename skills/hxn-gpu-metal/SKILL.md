@@ -49,7 +49,13 @@ where `slot` finds the entry point in `MSL_SLOTS` by its WGSL name and returns
 `Lambda.find(entry.resources, r -> r.group == group && r.binding == binding).index`.
 
 Render: `device.newTexture({width, height, format: PixelFormat.Rgba8Unorm, usage: TextureUsage.RenderTarget | TextureUsage.ShaderRead, storage: StorageMode.Shared})`,
-`device.newRenderPipeline(vertexFn, fragmentFn, format, attributes, layouts)`,
+`device.newRenderPipeline(vertexFn, fragmentFn, format, attributes, layouts, blend)`,
+where `blend` is a `Blend` record: `enabled`, then the operation and source
+and destination factors of the color and of the alpha, as Metal's
+`MTLBlendOperation` (0 `Add` to 4 `Max`) and `MTLBlendFactor` (0 `Zero` to
+10 `SourceAlphaSaturated`) values. Straight alpha is `{enabled: true,
+colorOperation: 0, colorSource: 4, colorDestination: 5, alphaOperation: 0,
+alphaSource: 1, alphaDestination: 5}`;
 then `commands.renderEncoder(target, LoadAction.Clear, r, g, b, a)`,
 `setPipeline`, `setVertexBuffer`, `setFragmentBytes`/`setFragmentBuffer`,
 `setFragmentTexture`, `setFragmentSampler`, `draw(Primitive.TriangleStrip, 0, 4, 1)`, `end()`.
