@@ -34,6 +34,13 @@ class Texture {
 		HxnGpuMetalNative.texture_write(hxnRaw, bytes, bytesPerRow);
 
 	/**
+		Replaces the `width` by `height` pixels at `x`, `y` with `bytes`, rows `bytes_per_row`
+		apart. The texture's storage must be shared or managed.
+	**/
+	public function writeRegion(x:Int, y:Int, width:Int, height:Int, bytes:haxe.io.Bytes, bytesPerRow:Int):Void
+		HxnGpuMetalNative.texture_write_region(hxnRaw, x, y, width, height, bytes, bytesPerRow);
+
+	/**
 		The whole texture's bytes, rows `bytes_per_row` apart. A managed texture must be
 		synchronized first (`CommandBuffer.synchronize`) after the GPU wrote it.
 	**/

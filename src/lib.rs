@@ -21,9 +21,9 @@ use objc2_metal::{
     MTLFunction, MTLLibrary, MTLLoadAction, MTLOrigin, MTLPixelFormat as RawPixelFormat,
     MTLPrimitiveType, MTLRegion, MTLRenderCommandEncoder, MTLRenderPassDescriptor,
     MTLRenderPipelineDescriptor, MTLRenderPipelineState, MTLResourceOptions, MTLSamplerAddressMode,
-    MTLSamplerDescriptor, MTLSamplerMinMagFilter, MTLSamplerState, MTLSize, MTLStorageMode,
-    MTLStoreAction, MTLTexture, MTLTextureDescriptor, MTLTextureUsage, MTLVertexDescriptor,
-    MTLVertexFormat, MTLVertexStepFunction, MTLViewport,
+    MTLSamplerDescriptor, MTLSamplerMinMagFilter, MTLSamplerState, MTLScissorRect, MTLSize,
+    MTLStorageMode, MTLStoreAction, MTLTexture, MTLTextureDescriptor, MTLTextureUsage,
+    MTLVertexDescriptor, MTLVertexFormat, MTLVertexStepFunction, MTLViewport,
 };
 use objc2_quartz_core::{CAMetalDrawable, CAMetalLayer};
 
@@ -96,6 +96,18 @@ impl PixelFormat {
         ]
         .into_iter()
         .find(|f| *f as usize == raw.0)
+    }
+
+    fn bytes_per_pixel(self) -> usize {
+        use PixelFormat::*;
+        match self {
+            R8Unorm => 1,
+            R32Float | Rgba8Unorm | Rgba8UnormSrgb | Bgra8Unorm | Bgra8UnormSrgb | Depth32Float => {
+                4
+            }
+            Rgba16Float => 8,
+            Rgba32Float => 16,
+        }
     }
 }
 
@@ -617,6 +629,65 @@ impl Texture {
         Ok(())
     }
 
+    /// Replaces the `width` by `height` pixels at `x`, `y` with `bytes`, rows `bytes_per_row`
+    /// apart. The texture's storage must be shared or managed.
+    pub fn write_region(
+        &self,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        bytes: &[u8],
+        bytes_per_row: i32,
+    ) -> Result<(), String> {
+        let row = usize_of(bytes_per_row as i64, "bytes per row")?;
+        let (x, y) = (usize_of(x as i64, "x")?, usize_of(y as i64, "y")?);
+        let (width, height) = (
+            usize_of(width as i64, "a width")?,
+            usize_of(height as i64, "a height")?,
+        );
+        if width == 0 || height == 0 {
+            return Err("a region is at least one pixel".to_string());
+        }
+        if x + width > self.texture.0.width() || y + height > self.texture.0.height() {
+            return Err(format!(
+                "a {width}x{height} region at {x}, {y} goes past the edge of the texture"
+            ));
+        }
+        let pixel = self.format().map_or(4, PixelFormat::bytes_per_pixel);
+        let packed = width * pixel;
+        if row < packed {
+            return Err(format!(
+                "rows of {width} pixels take {packed} bytes, more than bytes per row {row}"
+            ));
+        }
+        let needed = row
+            .checked_mul(height - 1)
+            .and_then(|n| n.checked_add(packed))
+            .ok_or("the region is too large")?;
+        if bytes.len() < needed {
+            return Err(format!(
+                "{} bytes cannot fill a region that needs {needed}",
+                bytes.len()
+            ));
+        }
+        let region = MTLRegion {
+            origin: MTLOrigin { x, y, z: 0 },
+            size: MTLSize {
+                width,
+                height,
+                depth: 1,
+            },
+        };
+        let pointer = NonNull::new(bytes.as_ptr() as *mut c_void).ok_or("no bytes")?;
+        unsafe {
+            self.texture
+                .0
+                .replaceRegion_mipmapLevel_withBytes_bytesPerRow(region, 0, pointer, row)
+        };
+        Ok(())
+    }
+
     /// The whole texture's bytes, rows `bytes_per_row` apart. A managed texture must be
     /// synchronized first (`CommandBuffer.synchronize`) after the GPU wrote it.
     pub fn read(&self, bytes_per_row: i32) -> Result<Vec<u8>, String> {
@@ -1076,6 +1147,17 @@ impl RenderEncoder {
             znear: 0.0,
             zfar: 1.0,
         });
+    }
+
+    /// Draws only inside the `width` by `height` pixels at `x`, `y` of the target.
+    pub fn set_scissor(&mut self, x: i32, y: i32, width: i32, height: i32) -> Result<(), String> {
+        self.encoder.0.setScissorRect(MTLScissorRect {
+            x: usize_of(x as i64, "x")?,
+            y: usize_of(y as i64, "y")?,
+            width: usize_of(width as i64, "a width")?,
+            height: usize_of(height as i64, "a height")?,
+        });
+        Ok(())
     }
 
     /// Draws `count` vertices from `start`, `instances` times.

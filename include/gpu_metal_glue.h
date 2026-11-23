@@ -182,6 +182,11 @@ inline void texture_write(void *self, Array<unsigned char> bytes, int bytes_per_
 	hxn::check(hxn_gpu_metal_texture_write((hxn_handle *)self, hxn::slice(bytes), bytes_per_row, &err), err);
 }
 
+inline void texture_write_region(void *self, int x, int y, int width, int height, Array<unsigned char> bytes, int bytes_per_row) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_texture_write_region((hxn_handle *)self, x, y, width, height, hxn::slice(bytes), bytes_per_row, &err), err);
+}
+
 inline Array<unsigned char> texture_read(void *self, int bytes_per_row) {
 	hxn_buf out = HXN_BUF_EMPTY;
 	hxn_buf err = HXN_BUF_EMPTY;
@@ -401,6 +406,11 @@ inline void render_encoder_set_fragment_sampler(void *self, void *sampler, int i
 inline void render_encoder_set_viewport(void *self, double x, double y, double width, double height) {
 	hxn_buf err = HXN_BUF_EMPTY;
 	hxn::check(hxn_gpu_metal_render_encoder_set_viewport((hxn_handle *)self, x, y, width, height, &err), err);
+}
+
+inline void render_encoder_set_scissor(void *self, int x, int y, int width, int height) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_render_encoder_set_scissor((hxn_handle *)self, x, y, width, height, &err), err);
 }
 
 inline void render_encoder_draw(void *self, int primitive, int start, int count, int instances) {

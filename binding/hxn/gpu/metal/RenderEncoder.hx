@@ -40,6 +40,10 @@ class RenderEncoder {
 	public function setViewport(x:Float, y:Float, width:Float, height:Float):Void
 		HxnGpuMetalNative.render_encoder_set_viewport(hxnRaw, x, y, width, height);
 
+	/** Draws only inside the `width` by `height` pixels at `x`, `y` of the target. **/
+	public function setScissor(x:Int, y:Int, width:Int, height:Int):Void
+		HxnGpuMetalNative.render_encoder_set_scissor(hxnRaw, x, y, width, height);
+
 	/** Draws `count` vertices from `start`, `instances` times. **/
 	public function draw(primitive:Primitive, start:Int, count:Int, instances:Int):Void
 		HxnGpuMetalNative.render_encoder_draw(hxnRaw, primitive, start, count, instances);

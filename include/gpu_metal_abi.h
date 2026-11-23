@@ -36,6 +36,7 @@ hxn_status hxn_gpu_metal_texture_width(hxn_handle *self, int32_t *out, hxn_buf *
 hxn_status hxn_gpu_metal_texture_height(hxn_handle *self, int32_t *out, hxn_buf *err);
 hxn_status hxn_gpu_metal_texture_format(hxn_handle *self, hxn_buf *out, hxn_buf *err);
 hxn_status hxn_gpu_metal_texture_write(hxn_handle *self, hxn_slice bytes, int32_t bytes_per_row, hxn_buf *err);
+hxn_status hxn_gpu_metal_texture_write_region(hxn_handle *self, int32_t x, int32_t y, int32_t width, int32_t height, hxn_slice bytes, int32_t bytes_per_row, hxn_buf *err);
 hxn_status hxn_gpu_metal_texture_read(hxn_handle *self, int32_t bytes_per_row, hxn_buf *out, hxn_buf *err);
 hxn_status hxn_gpu_metal_texture_drop(hxn_handle *self, hxn_buf *err);
 
@@ -93,6 +94,7 @@ hxn_status hxn_gpu_metal_render_encoder_set_fragment_bytes(hxn_handle *self, hxn
 hxn_status hxn_gpu_metal_render_encoder_set_fragment_texture(hxn_handle *self, hxn_handle *texture, int32_t index, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_set_fragment_sampler(hxn_handle *self, hxn_handle *sampler, int32_t index, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_set_viewport(hxn_handle *self, double x, double y, double width, double height, hxn_buf *err);
+hxn_status hxn_gpu_metal_render_encoder_set_scissor(hxn_handle *self, int32_t x, int32_t y, int32_t width, int32_t height, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_draw(hxn_handle *self, int32_t primitive, int32_t start, int32_t count, int32_t instances, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_end(hxn_handle *self, hxn_buf *err);
 hxn_status hxn_gpu_metal_render_encoder_drop(hxn_handle *self, hxn_buf *err);

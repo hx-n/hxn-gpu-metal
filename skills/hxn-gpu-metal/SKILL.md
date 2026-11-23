@@ -59,7 +59,10 @@ alphaSource: 1, alphaDestination: 5}`;
 then `commands.renderEncoder(target, LoadAction.Clear, r, g, b, a)`,
 `setPipeline`, `setVertexBuffer`, `setFragmentBytes`/`setFragmentBuffer`,
 `setFragmentTexture`, `setFragmentSampler`, `draw(Primitive.TriangleStrip, 0, 4, 1)`, `end()`.
-`texture.read(bytesPerRow)` reads a shared texture back.
+`texture.read(bytesPerRow)` reads a shared texture back, and
+`texture.writeRegion(x, y, w, h, bytes, bytesPerRow)` writes part of one.
+`LoadAction.Load` keeps what the target holds. `setViewport(x, y, w, h)` and
+`setScissor(x, y, w, h)` take pixels from the target's top-left corner.
 
 ## Rules
 
