@@ -6,6 +6,6 @@
   "license": "Apache",
   "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native", "cross"],
   "contributors": ["darmie", "rayzor"],
-  "releasenote": "Blend what a render pipeline draws into its target.",
+  "releasenote": "Blend what a pipeline draws, write part of a texture and set a scissor.",
   "dependencies": { "hxn": "0.3.9" }
 }

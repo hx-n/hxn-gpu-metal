@@ -15,7 +15,7 @@ name = "hxn_gpu_metal"
 library = "gpu_metal"
 haxelib = "hxn-gpu-metal"
 contributors = ["darmie", "rayzor"]
-releasenote = "Blend what a render pipeline draws into its target."
+releasenote = "Blend what a pipeline draws, write part of a texture and set a scissor."
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]
