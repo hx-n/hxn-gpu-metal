@@ -19,8 +19,8 @@ hxn_status hxn_gpu_metal_device_new_library(hxn_handle *self, hxn_slice metallib
 hxn_status hxn_gpu_metal_device_new_command_queue(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_compute_pipeline(hxn_handle *self, hxn_handle *function, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_compute_pipeline_async(hxn_handle *self, hxn_handle *function, hxn_handle **out, hxn_buf *err);
-hxn_status hxn_gpu_metal_device_new_render_pipeline(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_handle **out, hxn_buf *err);
-hxn_status hxn_gpu_metal_device_new_render_pipeline_async(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_render_pipeline(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_slice blend, hxn_handle **out, hxn_buf *err);
+hxn_status hxn_gpu_metal_device_new_render_pipeline_async(hxn_handle *self, hxn_handle *vertex, hxn_handle *fragment, int32_t format, hxn_slice attributes, hxn_slice layouts, hxn_slice blend, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_texture(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_new_sampler(hxn_handle *self, hxn_slice descriptor, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_device_drop(hxn_handle *self, hxn_buf *err);

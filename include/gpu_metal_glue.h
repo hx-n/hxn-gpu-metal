@@ -99,17 +99,17 @@ inline void *device_new_compute_pipeline_async(void *self, void *function) {
 	return out;
 }
 
-inline void *device_new_render_pipeline(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts) {
+inline void *device_new_render_pipeline(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts, Array<unsigned char> blend) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;
-	hxn::check(hxn_gpu_metal_device_new_render_pipeline((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), &out, &err), err);
+	hxn::check(hxn_gpu_metal_device_new_render_pipeline((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), hxn::slice(blend), &out, &err), err);
 	return out;
 }
 
-inline void *device_new_render_pipeline_async(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts) {
+inline void *device_new_render_pipeline_async(void *self, void *vertex, void *fragment, int format, Array<unsigned char> attributes, Array<unsigned char> layouts, Array<unsigned char> blend) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;
-	hxn::check(hxn_gpu_metal_device_new_render_pipeline_async((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), &out, &err), err);
+	hxn::check(hxn_gpu_metal_device_new_render_pipeline_async((hxn_handle *)self, (hxn_handle *)vertex, (hxn_handle *)fragment, format, hxn::slice(attributes), hxn::slice(layouts), hxn::slice(blend), &out, &err), err);
 	return out;
 }
 
