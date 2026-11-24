@@ -1,11 +1,11 @@
 [package]
 name = "hxn-gpu-metal"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 description = "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework"
 repository = "https://github.com/hx-n/hxn-gpu-metal"
 license = "Apache-2.0"
-keywords = ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "native", "cross"]
+keywords = ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "cppia", "native", "cross"]
 
 [lib]
 name = "hxn_gpu_metal"
@@ -15,7 +15,7 @@ name = "hxn_gpu_metal"
 library = "gpu_metal"
 haxelib = "hxn-gpu-metal"
 contributors = ["darmie", "rayzor"]
-releasenote = "Draw into several color targets in one pass, and test and write depth."
+releasenote = "Set whether presents wait for the display's refresh, and read four normalized bytes as a vertex attribute."
 # The check `hxn check` and `hxn run` build.
 haxe = "examples/check"
 haxe-flags = ["-lib", "hxnsl"]
