@@ -493,6 +493,11 @@ inline void layer_set_drawable_size(void *self, double width, double height) {
 	hxn::check(hxn_gpu_metal_layer_set_drawable_size((hxn_handle *)self, width, height, &err), err);
 }
 
+inline void layer_set_display_sync(void *self, bool enabled) {
+	hxn_buf err = HXN_BUF_EMPTY;
+	hxn::check(hxn_gpu_metal_layer_set_display_sync((hxn_handle *)self, enabled ? 1 : 0, &err), err);
+}
+
 inline void *layer_next_drawable(void *self) {
 	hxn_handle *out = 0;
 	hxn_buf err = HXN_BUF_EMPTY;

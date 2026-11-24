@@ -115,6 +115,7 @@ hxn_status hxn_gpu_metal_render_encoder_drop(hxn_handle *self, hxn_buf *err);
 /* Layer */
 hxn_status hxn_gpu_metal_layer_attach(hxn_handle *device, int64_t view, int32_t format, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_layer_set_drawable_size(hxn_handle *self, double width, double height, hxn_buf *err);
+hxn_status hxn_gpu_metal_layer_set_display_sync(hxn_handle *self, int32_t enabled, hxn_buf *err);
 hxn_status hxn_gpu_metal_layer_next_drawable(hxn_handle *self, hxn_handle **out, hxn_buf *err);
 hxn_status hxn_gpu_metal_layer_drop(hxn_handle *self, hxn_buf *err);
 
