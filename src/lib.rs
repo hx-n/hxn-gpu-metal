@@ -195,6 +195,8 @@ pub struct SamplerDescriptor {
 #[hxn::data]
 #[derive(Clone, Copy)]
 pub enum VertexFormat {
+    /// Four bytes, each read as 0 to 1.
+    UChar4Normalized = 9,
     Float = 28,
     Float2 = 29,
     Float3 = 30,

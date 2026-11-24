@@ -29,7 +29,7 @@
     {
       "name": "VertexFormat",
       "docs": "A vertex attribute's format, with Metal's values.",
-      "variants": [{ "name": "Float", "value": 28 }, { "name": "Float2", "value": 29 }, { "name": "Float3", "value": 30 }, { "name": "Float4", "value": 31 }, { "name": "Int", "value": 32 }, { "name": "UInt", "value": 36 }]
+      "variants": [{ "name": "UChar4Normalized", "value": 9 }, { "name": "Float", "value": 28 }, { "name": "Float2", "value": 29 }, { "name": "Float3", "value": 30 }, { "name": "Float4", "value": 31 }, { "name": "Int", "value": 32 }, { "name": "UInt", "value": 36 }]
     },
     {
       "name": "LoadAction",

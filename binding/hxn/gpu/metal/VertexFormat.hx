@@ -3,6 +3,8 @@ package hxn.gpu.metal;
 
 /** A vertex attribute's format, with Metal's values. **/
 enum abstract VertexFormat(Int) from Int to Int {
+	/** Four bytes, each read as 0 to 1. **/
+	var UChar4Normalized = 9;
 	var Float = 28;
 	var Float2 = 29;
 	var Float3 = 30;
