@@ -117,7 +117,8 @@ installs the compiler, or `xcodebuild -downloadComponent MetalToolchain`.
 `NSView` that [hxn-window](https://github.com/hx-n/hxn-window)'s `raw(0)`
 returns on macOS, or the `UIView` on iOS. It must run on the main thread.
 `nextDrawable()` gives a drawable whose `texture()` a render pass targets, and
-`CommandBuffer.present` shows it.
+`CommandBuffer.present` shows it. `setDisplaySync(false)` lets a present
+show without waiting for the display's refresh, on macOS.
 
 ## Building from source
 

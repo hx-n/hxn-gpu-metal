@@ -1449,6 +1449,14 @@ impl Layer {
             .setDrawableSize(objc2_core_foundation::CGSize { width, height });
     }
 
+    /// Sets whether presenting a drawable waits for the display's refresh. On iOS it always waits.
+    pub fn set_display_sync(&self, enabled: bool) {
+        #[cfg(target_os = "macos")]
+        self.layer.0.setDisplaySyncEnabled(enabled);
+        #[cfg(not(target_os = "macos"))]
+        let _ = enabled;
+    }
+
     /// The next drawable to render into, or null when none is free in time.
     pub fn next_drawable(&self) -> Option<Drawable> {
         let drawable = self.layer.0.nextDrawable()?;

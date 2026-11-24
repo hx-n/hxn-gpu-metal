@@ -739,6 +739,15 @@
           "blocking": false
         },
         {
+          "name": "set_display_sync",
+          "docs": "Sets whether presenting a drawable waits for the display's refresh. On iOS it always waits.",
+          "kind": "method",
+          "params": [{ "name": "enabled", "type": "bool" }],
+          "returns": "void",
+          "fallible": false,
+          "blocking": false
+        },
+        {
           "name": "next_drawable",
           "docs": "The next drawable to render into, or null when none is free in time.",
           "kind": "method",

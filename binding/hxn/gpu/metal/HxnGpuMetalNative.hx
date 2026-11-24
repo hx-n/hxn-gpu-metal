@@ -111,6 +111,7 @@ package hxn.gpu.metal;
 	static function render_encoder_drop(self:hxn.Handle):Void;
 	static function layer_attach(device:hxn.Handle, view:haxe.Int64, format:Int):hxn.Handle;
 	static function layer_set_drawable_size(self:hxn.Handle, width:Float, height:Float):Void;
+	static function layer_set_display_sync(self:hxn.Handle, enabled:Bool):Void;
 	static function layer_next_drawable(self:hxn.Handle):hxn.Handle;
 	static function layer_drop(self:hxn.Handle):Void;
 	static function drawable_texture(self:hxn.Handle):hxn.Handle;

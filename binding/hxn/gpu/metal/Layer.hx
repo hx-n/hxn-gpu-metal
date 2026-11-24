@@ -25,6 +25,10 @@ class Layer {
 	public function setDrawableSize(width:Float, height:Float):Void
 		HxnGpuMetalNative.layer_set_drawable_size(hxnRaw, width, height);
 
+	/** Sets whether presenting a drawable waits for the display's refresh. On iOS it always waits. **/
+	public function setDisplaySync(enabled:Bool):Void
+		HxnGpuMetalNative.layer_set_display_sync(hxnRaw, enabled);
+
 	/** The next drawable to render into, or null when none is free in time. **/
 	public function nextDrawable():Null<Drawable> {
 		var made = HxnGpuMetalNative.layer_next_drawable(hxnRaw);

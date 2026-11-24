@@ -101,7 +101,7 @@ to 7 `Always`) that `encoder.setDepthState` applies, and `RenderTargets.create()
 `Layer.attach(device, window.raw(0), PixelFormat.Bgra8Unorm)` with an
 hxn-window `Window` on macOS (AppKit) or iOS (UIKit), on the main thread.
 Each frame: `layer.nextDrawable()`, render to `drawable.texture()`,
-`commands.present(drawable)`, `commit()`. `setDrawableSize` on resize.
+`commands.present(drawable)`, `commit()`. `setDrawableSize` on resize, and `setDisplaySync(vsync)` on macOS.
 
 ## Reference
 
