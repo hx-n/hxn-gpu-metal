@@ -1,11 +1,11 @@
 {
   "name": "hxn-gpu-metal",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Metal for Haxe: devices, buffers, textures, pipelines and command encoding over Apple's Metal framework",
   "url": "https://github.com/hx-n/hxn-gpu-metal",
   "license": "Apache",
   "tags": ["metal", "gpu", "haxe", "graphics", "compute", "shaders", "macos", "ios", "hashlink", "hxcpp", "cppia", "native", "cross"],
   "contributors": ["darmie", "rayzor"],
-  "releasenote": "Set whether presents wait for the display's refresh, and read four normalized bytes as a vertex attribute.",
+  "releasenote": "Compile shaders for the iOS simulator and device of an Ash build, with a minimum OS version.",
   "dependencies": { "hxn": "0.3.9" }
 }
