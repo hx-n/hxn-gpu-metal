@@ -10,7 +10,8 @@ import sys.io.Process;
 	An hxnsl target that compiles a shader's MSL to a Metal library at
 	compile time, with `xcrun metal` and `metallib`, for the SDK the program
 	targets: iOS (`-D iphoneos`), the iOS simulator (`-D iphonesim`) or
-	macOS. Without a Metal compiler on the compiling machine the shader's
+	macOS. hxn gives an Ash build the target as `-D hxn_triple`, such as
+	`aarch64-apple-ios-sim`, which selects the SDK the same way. Without a Metal compiler on the compiling machine the shader's
 	`metallib()` is null, and the program compiles its MSL when it loads it.
 **/
 class MetalLibrary extends hxnsl.Target {
@@ -22,7 +23,31 @@ class MetalLibrary extends hxnsl.Target {
 	}
 
 	static function sdk():String {
-		return if (Context.defined("iphonesim")) "iphonesimulator" else if (Context.defined("iphoneos")) "iphoneos" else "macosx";
+		var triple = Context.definedValue("hxn_triple");
+		triple = triple == null ? "" : triple;
+		// x86_64-apple-ios is the simulator on Intel Macs.
+		var simulator = StringTools.endsWith(triple, "-apple-ios-sim") || triple == "x86_64-apple-ios";
+		return if (Context.defined("iphonesim") || simulator) "iphonesimulator" else
+			if (Context.defined("iphoneos") || StringTools.endsWith(triple, "-apple-ios")) "iphoneos" else "macosx";
+	}
+
+	/**
+		The flag that sets the oldest OS the library loads on. Without it, the compiler
+		targets the newest OS of its SDK, and older systems and simulators refuse the
+		library. iOS is 14.0, as the apps that hxn writes require, and macOS is 11.0, the
+		first on Apple silicon. `IPHONEOS_DEPLOYMENT_TARGET` and `MACOSX_DEPLOYMENT_TARGET`
+		replace them, as for Apple's other tools.
+	**/
+	static function minimum(sdk:String):String {
+		function given(name:String, fallback:String):String {
+			var value = Sys.getEnv(name);
+			return value == null || value == "" ? fallback : value;
+		}
+		return switch sdk {
+			case "iphonesimulator": '-mios-simulator-version-min=${given("IPHONEOS_DEPLOYMENT_TARGET", "14.0")}';
+			case "iphoneos": '-mios-version-min=${given("IPHONEOS_DEPLOYMENT_TARGET", "14.0")}';
+			case _: '-mmacosx-version-min=${given("MACOSX_DEPLOYMENT_TARGET", "11.0")}';
+		}
 	}
 
 	/** The Metal compiler's version line for `sdk`, or null without one. **/
@@ -58,8 +83,9 @@ class MetalLibrary extends hxnsl.Target {
 		var value:Expr = macro null;
 		if (compiler != null) {
 			var standard = (sdk == "macosx" ? "macos" : "ios") + "-metal2.1";
-			var out = s.step('$sdk $standard $compiler', ["shader.metal" => Bytes.ofString(s.msl)], dir -> {
-				xcrun(s, ["-sdk", sdk, "metal", '-std=$standard', "-c", '$dir/shader.metal', "-o", '$dir/shader.air']);
+			var minimum = minimum(sdk);
+			var out = s.step('$sdk $standard $minimum $compiler', ["shader.metal" => Bytes.ofString(s.msl)], dir -> {
+				xcrun(s, ["-sdk", sdk, "metal", '-std=$standard', minimum, "-c", '$dir/shader.metal', "-o", '$dir/shader.air']);
 				xcrun(s, ["-sdk", sdk, "metallib", '$dir/shader.air', "-o", '$dir/shader.metallib']);
 			}, ["shader.metallib"]);
 			var resource = s.resource("shader.metallib", out.get("shader.metallib"));

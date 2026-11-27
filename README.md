@@ -88,8 +88,9 @@ sets `hxn.Loop.manual` and calls `hxn.Loop.sync()` once a frame.
 A shader for this driver implements `hxn.gpu.metal.Shader`, which extends
 `hxnsl.Shader`. Besides hxnsl's `MSL` and `MSL_SLOTS`, it gets `metallib()`:
 the shader compiled to a Metal library at compile time, by
-`xcrun metal` and `metallib`, for the SDK the program targets (macOS, or iOS
-and the iOS simulator with hxcpp's `-D iphoneos` or `-D iphonesim`).
+`xcrun metal` and `metallib`, for the SDK the program targets: macOS, or iOS
+and the iOS simulator with hxcpp's `-D iphoneos` or `-D iphonesim`, or with the
+triple that hxn gives an Ash build as `-D hxn_triple`.
 `Shaders.library` loads it, so the program compiles no shader:
 
 ```haxe
